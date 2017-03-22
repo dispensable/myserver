@@ -3,11 +3,14 @@
 import os
 import sys
 from pidfile import Pidfile
+from sock import create_sockets
+import utils
 
 
 class Watcher(object):
 
-    listeners = []
+    LISTENERS = []
+    PIPE = []
 
     def __init__(self, app):
         self.app = app
@@ -37,6 +40,21 @@ class Watcher(object):
         }
 
     def init_sig(self):
+        """ create a self pipe to avoid select/sig conflicts"""
+        for pipe in self.PIPE:
+            os.close(pipe)
+
+        # create a pipe and set them unblocking to avoid sig comes too fast
+        self.PIPE = fd_pair = os.pipe()
+        for fd in fd_pair:
+            utils.set_fd_nonblocking(fd)
+            utils.set_fd_close_on_exec(fd)
+
+        # 安装信号处理器
+
+
+    def signal(self, sig):
+        """ 将信号添加到队列中 """
         pass
 
     def setup_app(self, app):
@@ -84,7 +102,8 @@ class Watcher(object):
             self.pidfile.create(self.pid)
 
     def setup_sockets(self):
-        pass
+        if not self.LISTENERS:
+            self.LISTENERS = create_sockets(self.cfg, self.log)
 
     def setup_log(self):
         pass
