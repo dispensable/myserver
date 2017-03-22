@@ -2,9 +2,13 @@
 
 import os
 import sys
+from pidfile import Pidfile
 
 
 class Watcher(object):
+
+    listeners = []
+
     def __init__(self, app):
         self.app = app
         self._num_of_workers = None
@@ -70,7 +74,14 @@ class Watcher(object):
         self.cfg.get('nworkers_changed')(self, value, old_value)
 
     def setup_pidfile(self):
-        pass
+        self.pid = os.getpid()
+
+        if self.cfg.get('pid'):
+            filename = self.cfg.get('pid')
+            if self.master_pid != 0:
+                filename += '.2'
+            self.pidfile = Pidfile(filename)
+            self.pidfile.create(self.pid)
 
     def setup_sockets(self):
         pass
@@ -91,4 +102,8 @@ class Watcher(object):
         pass
 
     def run(self):
+        self.start()
+
+        # worker管理
+
         print('watcher is running...')
