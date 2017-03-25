@@ -10,6 +10,7 @@ import select
 import errno
 from setproctitle import setproctitle
 import time
+from config.config import __version__
 
 
 class Watcher(object):
@@ -92,53 +93,60 @@ class Watcher(object):
         if len(self.SIGQUEUE) < 5:
             self.SIGQUEUE.append(sig)
 
-    # handler for HUP QUIT INT TERM TTIN TTOU USR1 USR2 WINCH ALARM
+    def handle_alrm(self, sig, frame):
+        self.kill_all_workers(signal.SIGKILL)
+
     def handle_chld(self, sig, frame):
         self.wait_worker()
 
-    def handle_hup(self):
-        self.log.info("Hang up: %s ", str(self.master_name))
-        self.reload()
+    # handler for HUP QUIT INT TERM TTIN TTOU USR1 USR2 WINCH
+    def get_handler(self, sig):
+        def handle_hup(self):
+            self.log.info("Hang up: %s ", str(self.master_name))
+            self.reload()
 
-    def handle_quit(self):
-        self.stop()
-        raise StopIteration
+        def handle_quit(self):
+            self.stop()
+            raise StopIteration
 
-    def handle_int(self):
-        self.stop()
-        raise StopIteration
+        def handle_int(self):
+            self.stop()
+            raise StopIteration
 
-    def handle_term(self):
-        raise StopIteration
+        def handle_term(self):
+            raise StopIteration
 
-    def handle_ttin(self):
-        self.num_of_workers += 1
-        self.manage_worker()
+        def handle_ttin(self):
+            self.num_of_workers += 1
+            self.manage_worker()
 
-    def handle_ttou(self):
-        if self.num_of_workers <= 1:
-            return
-        self.num_of_workers -= 1
-        self.manage_worker()
+        def handle_ttou(self):
+            if self.num_of_workers <= 1:
+                return
+            self.num_of_workers -= 1
+            self.manage_worker()
 
-    def handle_usr1(self):
-        self.log.reopen_files()
-        self.kill_all_workers(signal.SIGUSR1)
+        def handle_usr1(self):
+            self.log.reopen_files()
+            self.kill_all_workers(signal.SIGUSR1)
 
-    def handle_usr2(self):
-        self.reexec()
+        def handle_usr2(self):
+            self.reexec()
 
-    def handle_winch(self):
-        if self.cfg.get('daemon'):
-            self.log.info("Gracefully closing workers")
-            self.num_of_workers = 0
-            self.kill_all_workers(signal.SIGTERM)
-        else:
-            self.log.info("Got sigwinch but ignore, "
-                          "cause this process isn't daemon")
+        def handle_winch(self):
+            if self.cfg.get('daemon'):
+                self.log.info("Gracefully closing workers")
+                self.num_of_workers = 0
+                self.kill_all_workers(signal.SIGTERM)
+            else:
+                self.log.info("Got sigwinch but ignore, "
+                              "cause this process isn't daemon")
+        handlers_func = locals()
+        handlers = {
+            sig: handlers_func['handle_' + str(sig)[11:]] for sig in self.SIGLIST
+        }
 
-    def handle_alrm(self, sig, frame):
-        self.kill_all_workers(signal.SIGKILL)
+        return handlers.get(sig, None)
 
     def sleep(self):
         """ use select to check if there is a signal comes """
@@ -210,11 +218,18 @@ class Watcher(object):
         if not self.LISTENERS:
             self.LISTENERS = create_sockets(self.cfg, self.log)
 
-    def setup_log(self):
-        pass
-
     def start(self):
-        pass
+        self.log.info("Starting server %s", __version__)
+        self.setup_pidfile()
+        self.init_sig()
+        self.cfg.get('on_starting_hook')(self)
+        self.setup_sockets()
+
+        self.log.debug("Watcher started")
+        self.log.info("[%s] listening at: %s", str(os.getpid()), str(','.join(
+            [l.getsockname for l in self.LISTENERS]
+        )))
+        self.log.info("Using worker: %s", str(self.cfg.get('worker_class')))
 
     def manage_worker(self):
         is_num_equal = len(self.WORKERS) - self.num_of_workers
@@ -289,10 +304,28 @@ class Watcher(object):
 
     def run(self):
         self.start()
-
+        setproctitle("Myserver Master %s" % str(os.getpid()))
         # worker管理
-
-        print('watcher is running...')
+        try:
+            self.manage_worker()
+            while True:
+                sig = self.SIGQUEUE.pop(0) if len(self.SIGQUEUE) > 0 else None
+                if not sig:
+                    self.sleep()
+                    self.kill_timeout_worker()
+                    self.manage_worker()
+                    continue
+                if sig not in self.SIGLIST:
+                    self.log.info("Ignoring unknown signal: %s", sig)
+                    continue
+                handler = self.get_handler(sig)
+                if not handler:
+                    self.log.error("Unhandled signal: %s", str(sig))
+                    continue
+                self.log.info("handling signal: %s", str(sig))
+                handler()
+        except StopIteration:
+            self.halt()
 
     def wait_worker(self):
         """ wait子进程，防止僵尸进程 """
