@@ -5,12 +5,28 @@ import sys
 from pidfile import Pidfile
 from sock import create_sockets
 import utils
+import signal
+import select
+import errno
 
 
 class Watcher(object):
 
     LISTENERS = []
     PIPE = []
+
+    # signal HUP QUIT INT TERM TTIN TTOU USR1 USR2 WINCH
+    # 需要排队的信号
+    SIGLIST = [signal.SIGHUP,
+               signal.SIGINT,
+               signal.SIGQUIT,
+               signal.SIGTERM,
+               signal.SIGTTIN,
+               signal.SIGTTOU,
+               signal.SIGUSR1,
+               signal.SIGUSR2,
+               signal.SIGWINCH]
+    SIGQUEUE = []
 
     def __init__(self, app):
         self.app = app
@@ -49,13 +65,87 @@ class Watcher(object):
         for fd in fd_pair:
             utils.set_fd_nonblocking(fd)
             utils.set_fd_close_on_exec(fd)
+        # 信号到来时首先在管道写入一个'\0'然后使用该信号
+        signal.set_wakeup_fd(self.PIPE[1])
 
-        # 安装信号处理器
+        # 为排队信号安装信号处理器
+        for sig in self.SIGLIST:
+            signal.signal(sig, self.signal)
 
+        # 为子进程退出信号安装处理器
+        signal.signal(signal.SIGCHLD, self.handle_chld)
 
-    def signal(self, sig):
+    def signal(self, sig, frame):
         """ 将信号添加到队列中 """
-        pass
+        if len(self.SIGQUEUE) < 5:
+            self.SIGQUEUE.append(sig)
+
+    # handler for HUP QUIT INT TERM TTIN TTOU USR1 USR2 WINCH
+    def handle_chld(self, sig, frame):
+        self.reap_worker()
+
+    def handle_hup(self):
+        self.log.info("Hang up: %s ", str(self.master_name))
+        self.reload()
+
+    def handle_quit(self):
+        self.stop()
+        raise StopIteration
+
+    def handle_int(self):
+        self.stop()
+        raise StopIteration
+
+    def handle_term(self):
+        raise StopIteration
+
+    def handle_ttin(self):
+        self.num_of_workers += 1
+        self.manage_worker()
+
+    def handle_ttou(self):
+        if self.num_of_workers <= 1:
+            return
+        self.num_of_workers -= 1
+        self.manage_worker()
+
+    def handle_usr1(self):
+        self.log.reopen_files()
+        self.kill_worker(signal.SIGUSR1)
+
+    def handle_usr2(self):
+        self.reexec()
+
+    def handle_winch(self):
+        if self.cfg.get('daemon'):
+            self.log.info("Gracefully closing workers")
+            self.num_of_workers = 0
+            self.kill_workers(signal.SIGTERM)
+        else:
+            self.log.info("Got sigwinch but ignore, "
+                          "cause this process isn't daemon")
+
+    def sleep(self):
+        """ use select to check if there is a signal comes """
+        while True:
+            try:
+                has_sig = select.select([self.PIPE[0]], [], [], 1.0)
+                # 检查是否包含pipe 读端
+                if not has_sig[0]:
+                    return
+                # readable
+                while True:
+                    os.read(self.PIPE[0], 1)
+            except select.error as e:
+                # 处理被信号打断的系统调用和超时重试错误
+                if e.args[0] not in (errno.EINTR, errno.EAGAIN):
+                    raise
+            except IOError as e:
+                # 处理pipe读取错误
+                if e.args[0] not in (errno.EINTR, errno.EAGAIN):
+                    raise
+            except KeyboardInterrupt:
+                sys.exit()
 
     def setup_app(self, app):
         self.cfg = app.config
@@ -114,9 +204,6 @@ class Watcher(object):
     def manage_worker(self):
         pass
 
-    def handle_sig(self):
-        pass
-
     def reload(self):
         pass
 
@@ -126,3 +213,18 @@ class Watcher(object):
         # worker管理
 
         print('watcher is running...')
+
+    def reap_worker(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def kill_worker(self, sig):
+        pass
+
+    def kill_workers(self, sig):
+        pass
+
+    def reexec(self):
+        pass
