@@ -121,7 +121,7 @@ workers = 4
 tmp_upload_dir = None
 
 # A dictionary containing headers and values that the front-end proxy
-# uses to indicate HTTPS requests. These tell Gunicorn to set
+# uses to indicate HTTPS requests. These tell myserver to set
 # ``wsgi.url_scheme`` to ``https``, so your application can tell that the
 # request is secure.
 
