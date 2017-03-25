@@ -156,7 +156,7 @@ on_booted_hook = when_booted
 # worker fork 前的钩子
 def before_worker_fork(server, worker):
     pass
-before_forke_worker = before_worker_fork
+before_fork_worker = before_worker_fork
 
 
 # worker fork之后的钩子
