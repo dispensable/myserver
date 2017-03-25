@@ -291,7 +291,40 @@ class Watcher(object):
                     self.log.warning("During worker %s exit, error  %s happend.", str(childpid), str(e))
 
     def reload(self):
-        pass
+
+        old_address = self.cfg.get('address')
+
+        # 重新加载配置
+        self.app.reload()
+        self.setup_app(self.app)
+
+        # 重新加载log文件
+        self.log.reopen_files()
+
+        # 重新加载listener
+        if old_address != self.cfg.get('address'):
+            for listener in self.LISTENERS:
+                listener.close()
+            self.LISTENERS = create_sockets(self.cfg, self.log)
+
+        # hook
+        self.cfg.get('on_reload_hook')
+
+        # 重新加载pidfile
+        if self.pidfile is not None:
+            self.pidfile.unlink()
+        if self.cfg.get('pidfile') is not None:
+            self.pidfile = Pidfile(self.cfg.get('pidfile'))
+
+        # 重新设置进程名
+        setproctitle("myserver master {}".format(self.proc_name))
+
+        # 重新加载workers
+        for i in range(self.cfg.get('workers')):
+            self.spwnworker()
+
+        # 管理wokers
+        self.manage_worker()
 
     def kill_timeout_worker(self):
         timeout = self.cfg.get('timeout')
@@ -324,8 +357,8 @@ class Watcher(object):
                     continue
                 self.log.info("handling signal: %s", str(sig))
                 handler()
-        except StopIteration:
-            self.halt()
+        except Exception as e:
+            raise e
 
     def wait_worker(self):
         """ wait子进程，防止僵尸进程 """
