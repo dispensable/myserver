@@ -170,6 +170,12 @@ def after_worker_init(worker):
     pass
 after_worker_inited = after_worker_init
 
+# before worker init
+def before_worker_init():
+    pass
+
+before_worker_init = before_worker_init
+
 
 # worker 因信号SIGINT 或者 SIGQUIT 退出之后钩子
 def worker_ini(worker):
