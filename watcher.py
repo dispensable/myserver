@@ -254,7 +254,8 @@ class Watcher(object):
         # 实例化worker
         self.worker_age += 1
         Worker_Class = self.cfg.get("worker_class")
-        worker = Worker_Class(self.worker_age, self.pid, self.app, self.log, self.LISTENERS, self.timeout / 2)
+        worker = Worker_Class(self.worker_age, self.pid, self.app, self.log,
+                              self.LISTENERS, self.timeout / 2, self.cfg)
 
         # worker fork hook
         self.cfg.get('before_fork_worker')()
@@ -285,7 +286,6 @@ class Watcher(object):
             finally:
                 self.log.info("worker %s booted", str(childpid))
                 try:
-                    worker.tmp.close()
                     self.cfg.get('after_worker_exit_hook')(self, worker)
                 except Exception as e:
                     self.log.warning("During worker %s exit, error  %s happend.", str(childpid), str(e))
@@ -312,7 +312,7 @@ class Watcher(object):
 
         # 重新加载pidfile
         if self.pidfile is not None:
-            self.pidfile.unlink()
+            self.pidfile.delete()
         if self.cfg.get('pidfile') is not None:
             self.pidfile = Pidfile(self.cfg.get('pidfile'))
 
@@ -331,7 +331,7 @@ class Watcher(object):
 
         if timeout:
             for pid, worker in self.WORKERS.items():
-                if time.time() - worker.tmp.last_update > timeout:
+                if time.time() - worker.last_heart_beat_time > timeout:
                     self.kill_worker(pid, signal.SIGKILL)
         return
 
@@ -380,7 +380,6 @@ class Watcher(object):
                     worker = self.WORKERS.pop(childid, None)
                     if not worker:
                         continue
-                    worker.tmp.close()
                     self.cfg.get('after_child_exit_hook')(self, worker)
         except OSError as e:
             if e.args[0] != errno.ECHILD:
@@ -407,7 +406,6 @@ class Watcher(object):
             if e.args[0] == errno.ESRCH:
                 worker = self.WORKERS.pop(pid, None)
                 if worker:
-                    worker.tmp.close()
                     self.cfg.get('after_worker_exit_hook')(self, worker)
                     return
             raise
