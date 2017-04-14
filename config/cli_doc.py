@@ -23,6 +23,7 @@ Options:
                         Enable stdio inheritance. [default: False]
   -k STRING --worker-class=STRING
                         The type of workers to use. [default: sync]
+  --ssl                 Use ssl or not. [default: False]
   --ssl-version SSL_VERSION
                         SSL version to use (see stdlib ssl module's) [default: 2]
   --suppress-ragged-eofs

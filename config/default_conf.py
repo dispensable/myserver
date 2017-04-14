@@ -19,6 +19,7 @@ backlog = 2048
 # The socket to bind.
 bind = '127.0.0.1:8000'
 
+ssl = False
 ca_certs = None
 capture_output = False
 cert_reqs = 0

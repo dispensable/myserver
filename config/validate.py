@@ -94,6 +94,7 @@ schema = Schema(
         'reload': bool,
         'reload_engine': str,
         'spew': bool,
+        'ssl': bool,
         'ssl_version': And(Use(int), lambda sslv: sslv >= 1),
         'statsd_host': Or(None, Use(validate_hostport)),
         'statsd_prefix': str,
