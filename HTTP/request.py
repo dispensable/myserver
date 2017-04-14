@@ -1,7 +1,7 @@
 from io import BytesIO
 from HTTP.errors import InvalidRequestLine, NoMoreData, InvalidHeader
 import re
-from HTTP.body import LengthBody, ChunkedBody, MultipartBody
+from HTTP.body import LengthBody, ChunkedBody, Body
 
 
 class Request(object):
@@ -123,13 +123,7 @@ class Request(object):
             if "trailer" not in self.header:
                 trailer_count = 0
             else:
-                trailer_count = len(self.header['trailer'].split(','))
-            self.body = ChunkedBody(self.buffer, trailer_count)
+                trailer_count = len(self.header['trailer'].split(';'))
+            self.body = Body(ChunkedBody(self.buffer, trailer_count))
         elif "content-length" in self.header:
-            self.body = LengthBody(self.buffer, int(self.header["content-lenght"]))
-        elif "content-type" in self.header and \
-            "multipart/byteranges" in self.header["content-type"].lower():
-            self.body = MultipartBody(self.buffer)
-
-
-
+            self.body = Body(LengthBody(self.buffer, int(self.header["content-lenght"])))

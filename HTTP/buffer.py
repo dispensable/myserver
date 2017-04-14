@@ -37,7 +37,7 @@ class Buffer(object):
             # 如果读取完毕，返回所有数据被清空buffer
             if not data:
                 all_data = self.buffer.getvalue()
-                self.buffer = BytesIO
+                self.buffer = BytesIO()
                 return all_data
             # 如果有数据，写入buffer
             self.buffer.write(data)
