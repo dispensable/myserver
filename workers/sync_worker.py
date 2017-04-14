@@ -6,7 +6,7 @@ import errno
 import ssl
 
 from HTTP.parser import RequestParser
-from HTTP.wsgi import wsgi
+from HTTP import wsgi
 import time
 
 
