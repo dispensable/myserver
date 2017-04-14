@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from io import BytesIO
 from HTTP.errors import InvalidChunkSize, NoMoreData
+import sys
 
 
 class LengthBody(object):
@@ -81,7 +82,7 @@ class ChunkedBody(object):
             data = buffer.getvalue()
             include_trailer = data[all_data_end_index:]
             trailer = ''
-
+            # 分离拖挂数据
             while crlf_count > 0:
                 crlf_index = include_trailer.find(b'\r\n')
                 trailer += include_trailer[:crlf_index]
@@ -89,6 +90,7 @@ class ChunkedBody(object):
                 crlf_count -= 1
 
             self.trailer = trailer
+            # 将不属于拖挂的数据放回
             self.buf.write_data(include_trailer)
 
             return data[:all_data_end_index]
@@ -106,9 +108,87 @@ class ChunkedBody(object):
         return True
 
 
-class MultipartBody(object):
-    def __init__(self, buff):
-        self.buf = buff
+class Body(object):
+    def __init__(self, body_type):
+        self.body_type = body_type
+        self.buf = BytesIO()
 
-    def read(self):
-        pass
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        data = self.readline()
+        if not data:
+            raise StopIteration()
+        return data
+
+    def read(self, size=sys.maxsize):
+        """ WSGI 1.0.1 """
+
+        if size == b'':
+            return b''
+
+        size = self.validate_size_num(size)
+
+        if size < self.buf.tell():
+            return Body.get_size_data(self.buf, size)
+
+        elif size > self.buf.tell():
+            while self.buf.tell() < size:
+                new_data = self.body_type.read(1024)
+                if not new_data:
+                    break
+                self.buf.write(new_data)
+
+            return Body.get_size_data(self.buf, size)
+        else:
+            data = self.buf.getvalue()
+            self.buf = BytesIO()
+            return data
+
+    @staticmethod
+    def get_size_data(buf, size):
+        data = buf.getvalue()
+        size_data, rest = data[:size], data[size:]
+        buf = BytesIO()
+        buf.write(rest)
+        return size_data
+
+    def validate_size_num(self, size):
+        if size < 0:
+            return sys.maxsize
+        if size is not isinstance(size, int):
+            raise TypeError('size must > 0')
+        return size
+
+    def readline(self, size=sys.maxsize):
+        """ WSGI 1.0.1 """
+        if size == 0:
+            return b''
+
+        size = self.validate_size_num(size)
+
+        data = self.buf.getvalue()
+        self.buf = BytesIO()
+
+        while len(data) <= size or data.find(b'\n', 0, size) < size:
+            index = data.find(b'\n', 0, size)
+            # 缓存区一行数据已经读取完毕
+            if index > 0:
+                index += 1
+                self.buf.write(data[index:])
+                return data[:index]
+            # 缓存区尚未完整读入一行数据
+            new_data = self.body_type.read(min(1024, size))
+            if not new_data:
+                return data
+            data += new_data
+
+        # 读取到超过size的数据但仍然没有换行，返回size的数据，
+        # 保存多余数据
+        self.buf.write(data[size:])
+        return data[:size]
+
+    def readlines(self, size=None):
+        """ WSGI 1.0.1 """
+        return self.read().split(b'\n')
