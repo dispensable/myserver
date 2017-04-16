@@ -12,8 +12,8 @@ import time
 
 class SyncWorker(BaseWorker):
     def run(self):
-        for sock in self.listeners:
-            sock.setblocking(0)
+        # for sock in self.listeners:
+        #     sock.setblocking(0)
 
         timeout = self.timeout or 0.5
         self.handle_data(timeout)

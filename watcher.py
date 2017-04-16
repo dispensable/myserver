@@ -11,6 +11,7 @@ import errno
 from setproctitle import setproctitle
 import time
 from config.config import __version__
+from logger import Logger
 
 
 class Watcher(object):
@@ -71,8 +72,8 @@ class Watcher(object):
             os.close(pipe)
 
         # create a pipe and set them unblocking to avoid sig comes too fast
-        self.PIPE = fd_pair = os.pipe()
-        for fd in fd_pair:
+        self.PIPE = os.pipe()
+        for fd in self.PIPE:
             utils.set_fd_nonblocking(fd)
             utils.set_fd_close_on_exec(fd)
         # 信号到来时首先在管道写入一个'\0'然后使用该信号
@@ -143,7 +144,7 @@ class Watcher(object):
                               "cause this process isn't daemon")
         handlers_func = locals()
         handlers = {
-            sig: handlers_func['handle_' + str(sig)[11:]] for sig in self.SIGLIST
+            sig: handlers_func['handle_' + str(sig)[11:].lower()] for sig in self.SIGLIST
         }
 
         return handlers.get(sig, None)
@@ -174,25 +175,27 @@ class Watcher(object):
         self.cfg = app.config
 
         if self.log is None:
-            self.log = self.cfg.get('logger_class')(self.cfg)
+            # TODO: logger config from config file
+            # self.log = __import__(self.cfg.get('logger_class'))
+            self.log = Logger(self.cfg)
 
         if 'MYSERVER_FD' in os.environ:
             self.log.reopen_files()
 
         self.worker_class = self.cfg.get('worker_class')
-        self.address = self.cfg.get('address')
+        self.address = self.cfg.get('bind')[0]
         self.num_of_workers = self.cfg.get('workers')
         self.timeout = self.cfg.get('timeout')
-        self.proc_name = self.cfg.get('procname')
+        self.proc_name = self.cfg.get('default_proc_name')
 
         self.log.debug("Current configuration:\n{0}".format(
-            '\n'.join(('{}: {}'.format(key, value) for key, value in self.cfg.settings))))
+            '\n'.join(('{}: {}'.format(key, value) for key, value in self.cfg.settings.items()))))
 
         if self.cfg.get('env'):
             pass
-
-        if self.cfg.get('preload_app'):
-            self.app.wsgi()
+        # TODO: fix preload app
+        # if self.cfg.get('preload_app'):
+        #     self.app.wsgi()
 
     @property
     def num_of_workers(self):
@@ -202,7 +205,7 @@ class Watcher(object):
     def num_of_workers(self, value):
         old_value = self._num_of_workers
         self._num_of_workers = value
-        self.cfg.get('nworkers_changed')(self, value, old_value)
+        self.cfg.get('nworkers_changed')(value, old_value)
 
     def setup_pidfile(self):
         self.pid = os.getpid()
@@ -227,7 +230,7 @@ class Watcher(object):
 
         self.log.debug("Watcher started")
         self.log.info("[%s] listening at: %s", str(os.getpid()), str(','.join(
-            [l.getsockname for l in self.LISTENERS]
+            [str(l.getsockname()) for l in self.LISTENERS]
         )))
         self.log.info("Using worker: %s", str(self.cfg.get('worker_class')))
 
@@ -253,12 +256,16 @@ class Watcher(object):
 
         # 实例化worker
         self.worker_age += 1
-        Worker_Class = self.cfg.get("worker_class")
+
+        # TODO: from config file get worker class (import not only use str)
+        #Worker_Class = self.cfg.get("worker_class")
+        from workers import sync_worker
+        Worker_Class = sync_worker.SyncWorker
         worker = Worker_Class(self.worker_age, self.pid, self.app, self.log,
                               self.LISTENERS, self.timeout / 2, self.cfg)
 
         # worker fork hook
-        self.cfg.get('before_fork_worker')()
+        self.cfg.get('before_fork_worker')(self, worker)
 
         # fork
         childpid = os.fork()
@@ -266,17 +273,16 @@ class Watcher(object):
         # watcher进程
         if childpid != 0:
             self.WORKERS[childpid] = worker
-            self.num_of_workers += 1
             return childpid
 
         # worker进程
         if childpid == 0:
             try:
                 # 设置进程名称 参考：https://pypi.python.org/pypi/setproctitle 使用该库
-                setproctitle(self.cfg.get('default_proc_name') + ' worker {}'.format(childpid))
+                setproctitle(self.cfg.get('default_proc_name') + ' worker {}'.format(os.getpid()))
 
                 worker.pid = os.getpid()
-                self.log.info("worker running with pid %s", childpid)
+                self.log.info("worker running with pid %s", worker.pid)
                 self.cfg.get('after_worker_fork')(self, worker)
                 # pre fork
                 worker.init()
@@ -284,7 +290,7 @@ class Watcher(object):
             except Exception as e:
                 raise e
             finally:
-                self.log.info("worker %s booted", str(childpid))
+                self.log.info("worker %s booted", str(worker.pid))
                 try:
                     self.cfg.get('after_worker_exit_hook')(self, worker)
                 except Exception as e:
@@ -356,7 +362,7 @@ class Watcher(object):
                     self.log.error("Unhandled signal: %s", str(sig))
                     continue
                 self.log.info("handling signal: %s", str(sig))
-                handler()
+                handler(self)
         except Exception as e:
             raise e
 

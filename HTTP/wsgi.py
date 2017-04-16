@@ -1,7 +1,7 @@
 from HTTP import response
 from urllib.parse import urlparse
 import os
-from .. import SERVER_SOFTWARE
+from version import SERVER_SOFTWARE
 import io
 import logging
 import sys
@@ -67,7 +67,7 @@ class FileWrapper(object):
         raise IndexError
 
 
-def init_env(request, client_sock, listener_sock, config):
+def init_env(request, client_sock, listener_sock, config, addr):
 
     header_dict = request.header
 
@@ -107,6 +107,7 @@ def init_env(request, client_sock, listener_sock, config):
     WSGI_DICT['SERVER_SOFTWARE'] = SERVER_SOFTWARE
     WSGI_DICT['myserver.sock'] = client_sock
     WSGI_DICT['RAW_URI'] = request.path
+    WSGI_DICT['REMOTE_ADDR'] = addr
 
     # TODO: proxy
 
@@ -118,7 +119,7 @@ def init_env(request, client_sock, listener_sock, config):
 
 
 def create(request, client, addr, listener_sock, config):
-    environ = init_env(request, client, listener_sock, config)
+    environ = init_env(request, client, listener_sock, config, addr)
     resp = response.Response(request, client, config)
 
     return resp, environ

@@ -22,7 +22,7 @@ def create_sockets(cfg, log, fd=None):
 
     listeners = []
 
-    addresses = [cfg.get('bind')]
+    addresses = cfg.get('bind')
 
     ca_file = cfg.get('certfile')
     key_file = cfg.get('keyfile')

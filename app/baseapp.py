@@ -35,7 +35,7 @@ class BaseApp(object):
 
     def load(self):
         """ load app before server boot"""
-        raise NotImplementedError
+        raise NotImplementedError('WSGI APP NOT IMPLEMENTED')
 
     def reload(self):
         self.load_config()
@@ -54,6 +54,7 @@ class BaseApp(object):
             Watcher(self).run()
         except RuntimeError as e:
             print("ERROR: when start running server watcher:\n{}".format(str(e)), file=sys.stderr)
+            raise e
             sys.stderr.flush()
             sys.exit(1)
 

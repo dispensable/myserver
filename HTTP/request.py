@@ -16,6 +16,7 @@ class Request(object):
         self.header = {}
         self.body = None
         self.trailers = []  # chunked transfer encode
+        self.parse()
 
     def is_keep_alive(self):
         if self.version == (1, 0):
@@ -54,7 +55,7 @@ class Request(object):
         # parse headers line and delete it
         headers_index = self.parse_headers(buf)
 
-        self.buffer.write(data[headers_index:])
+        self.buffer.write_data(data[headers_index:])
 
         # parse body
         self.parse_body()
@@ -67,11 +68,11 @@ class Request(object):
         """
         while True:
             data = buf.getvalue()
-            if "\r\n" in data:
+            if b"\r\n" in data:
                 break
             buf.write(self.get_data())
 
-        request_line = data.decode().split("\r\n")[0]
+        request_line = data.split(b"\r\n")[0].decode()
 
         try:
             self.method, self.path, version = request_line.split(' ')
@@ -79,7 +80,7 @@ class Request(object):
             # 处理http 0.9
             self.method, self.path = request_line.split(' ')
             self.version = (0, 9)
-            return data.find(b'\r\n') + 2
+            return data.find('\r\n') + 2
 
         # HTTP/x.y
         version = version[5:]
@@ -91,7 +92,7 @@ class Request(object):
     def parse_headers(self, buf):
         while True:
             data = buf.getvalue()
-            if "\r\n\r\n" in data:
+            if b"\r\n\r\n" in data:
                 break
             buf.write(self.get_data())
 
@@ -127,3 +128,11 @@ class Request(object):
             self.body = Body(ChunkedBody(self.buffer, trailer_count))
         elif "content-length" in self.header:
             self.body = Body(LengthBody(self.buffer, int(self.header["content-lenght"])))
+
+    def should_close(self):
+        if self.version < (1, 1):
+            return True
+        if 'connection' in self.header:
+            if self.header['connection'].lower() == 'close':
+                return True
+        return False

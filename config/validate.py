@@ -108,9 +108,10 @@ schema = Schema(
         'worker_connections': And(Use(int), lambda n: n >= 0),
         'worker_tmp_dir': Or(None, os.path.exists),
         'workers': And(Use(int), lambda n: n > 0),
+        Optional('is_ssl'): bool,
         Optional('after_child_exit_hook'): Use(validate_func),
         Optional('on_staring'): Use(validate_func),
-        Optional('before_worker_fork'): Use(validate_func),
+        Optional('before_fork_worker'): Use(validate_func),
         Optional('worker_ini'): Use(validate_func),
         Optional('before_exec_hook'): Use(validate_func),
         Optional('before_handle_req'): Use(validate_func),
@@ -125,7 +126,7 @@ schema = Schema(
         Optional('before_forke_worker'): Use(validate_func),
         Optional('after_worker_init'): Use(validate_func),
         Optional('after_workernum_changed_hook'):Use(validate_func),
-        Optional('on_staring_hook'): Use(validate_func),
+        Optional('on_starting_hook'): Use(validate_func),
         Optional('worker_abort_hook'): Use(validate_func),
         Optional('when_exit_server_hook'): Use(validate_func),
         Optional('default_proc_name'): str,
@@ -140,7 +141,8 @@ schema = Schema(
         Optional('secure_scheme_headers'): dict,
         Optional('after_workernum_changed'): Use(validate_func),
         Optional('before_exec'): Use(validate_func),
-        Optional('on_reload'): Use(validate_func)
+        Optional('on_reload'): Use(validate_func),
+        Optional('nworkers_changed'): Use(validate_func)
     },
     ignore_extra_keys=True
 )

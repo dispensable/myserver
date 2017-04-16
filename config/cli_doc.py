@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from docopt import docopt
+from version import __version__
 
 CLI_DOC = """MyServer.
 Usage:
@@ -124,10 +125,10 @@ Options:
   --backlog INT         The maximum number of pending connections. [default: 2048]
   --logger-class STRING
                         The logger you want to use to log events in MyServer.
-                        [default: myserver.glogging.Logger]
+                        [default: logger.Logger]
 """
 
 if __name__ == '__main__':
 
-    arguments = docopt(CLI_DOC, version='0.1.0')
+    arguments = docopt(CLI_DOC, version=__version__)
     print(arguments)

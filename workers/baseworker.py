@@ -58,12 +58,12 @@ class BaseWorker(object):
 
         self.log.close_on_exec()
 
-        self.watch_fds = self.listeners.append(self.pipe[0])
+        self.watch_fds = self.listeners + [self.pipe[0]]
 
         self.init_sig()
 
         # set reloader
-        reloader = self.config.get('reloader')
+        reloader = self.config.get('reload_engine')
         if reloader in reloaders:
 
             def on_change(fname):
@@ -105,7 +105,7 @@ class BaseWorker(object):
 
     def handle_quit(self, sig, frame):
         self.alive = False
-        self.config.get('after_worker_quit')()
+        self.config.get('after_worker_quit')(self)
         time.sleep(0.1)
         sys.exit(0)
 

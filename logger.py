@@ -41,24 +41,24 @@ class Logger(object):
         self.cfg = cfg
         self.log_file = None
         self.lock = threading.Lock()
-        self.log_level = get_level(cfg.get('loglevel')) or logging.INFO
+        self.log_level = get_level(cfg.get('log_level')) or logging.INFO
         self.error_logger.setLevel(self.log_level)
         self.access_logger.setLevel(logging.INFO)
         self.setup(cfg)
 
     def setup(self, cfg):
-        if cfg.get('capture_output') and cfg.get('errorlog') != "-":
+        if cfg.get('capture_output') and cfg.get('log_file') != "-":
             for stream in sys.stdout, sys.stderr:
                 stream.flush()
 
-            self.log_file = open(cfg.get('errorlog'), 'a+')
+            self.log_file = open(cfg.get('log_file'), 'a+')
             os.dup2(self.log_file.fileno(), sys.stdout.fileno())
             os.dup2(self.log_file.fileno(), sys.stderr.fileno())
-        self._set_handler(self.error_logger, cfg.get('errorlog'),
+        self._set_handler(self.error_logger, cfg.get('log_file'),
                           logging.Formatter(self.error_fmt, self.datefmt))
 
         if self.access_logger is not None:
-            self._set_handler(self.access_logger, cfg.get('accesslog'),
+            self._set_handler(self.access_logger, cfg.get('access_logfile'),
                               logging.Formatter(self.access_fmt), sys.stdout)
 
     @staticmethod
@@ -109,14 +109,14 @@ class Logger(object):
         self.error_logger.log(lvl, msg, *args, **kwargs)
 
     def reopen_logfile(self):
-        if self.cfg.get('capture_output') and self.cfg.get('errorlog') != '-':
+        if self.cfg.get('capture_output') and self.cfg.get('log_file') != '-':
             sys.stdout.flush()
             sys.stderr.flush()
 
             with self.lock():
                 if self.log_file is not None:
                     self.log_file.close()
-                self.log_file = open(self.cfg.get('errorlog'), 'a+')
+                self.log_file = open(self.cfg.get('log_file'), 'a+')
                 os.dup2(self.log_file.fileno(), sys.stdout.fileno())
                 os.dup2(self.log_file.fileno(), sys.stderr.fileno())
 
@@ -132,7 +132,10 @@ class Logger(object):
                         handler.release()
 
     def close_on_exec(self):
-        for logger in logging.root.manager.loggerDict:
+        for logger in logging.root.manager.loggerDict.values():
+
+            if isinstance(logger, logging.PlaceHolder):
+                continue
             for handler in logger.handlers:
                 if isinstance(handler, logging.FileHandler):
                     handler.acquire()
@@ -143,3 +146,17 @@ class Logger(object):
                             fcntl.fcntl(handler.stream, fcntl.F_SETFD, flags)
                     finally:
                         handler.release()
+
+    def access(self, resp, req, environ, request_time):
+        log_format = {
+            "remotehost": environ.get('REMOTE_ADDR', '-'),
+            "username": req.header.get('username', '-'),
+            "auth-username": req.header.get('auth-username', '-'),
+            "timestamp": req.header.get('date', ''),
+            "request-line": ' '.join([req.method, req.path,
+                                      'HTTP/{}.{}'.format(req.version[0], req.version[1])]),
+            "response-code": str(resp.status_code),
+            "response-size": str(resp.sent_bytes),
+            "response-time": str(request_time)
+        }
+        self.access_logger.info("%s %s %s %s %s %s %s %s", log_format)

@@ -1,4 +1,4 @@
-from .. import SERVER_SOFTWARE
+from version import SERVER_SOFTWARE
 from email.utils import formatdate
 
 
@@ -48,7 +48,7 @@ class Response(object):
             value = str(v).strip()
             header = h.lower().strip()
             if header == "content-length":
-                self.length = value
+                self.length = int(value)
             self.headers.append((h.strip(), v))
 
     def validate_header(self, header):
@@ -72,6 +72,7 @@ class Response(object):
     def write(self, data):
         self.send_headers()
 
+        can_send = len(data)
         # data length limit
         if self.length is not None:
             if self.sent_bytes >= self.length:
@@ -82,7 +83,7 @@ class Response(object):
                 data = data[:data_len]
 
         # chunked data
-        if self.chunked and data_len == 0:
+        if self.chunked and can_send == 0:
             return
 
         self.sent_bytes += can_send
@@ -129,15 +130,17 @@ class Response(object):
         for h, v in self.headers:
             all_headers.append("{}: {}".format(h, v))
 
-        header_msg = "\r\n".join(all_headers)
+        header_msg = "\r\n".join(all_headers) + '\r\n\r\n'
+        print(header_msg)
         self.send(header_msg)
         self.has_header_sent = True
 
     def send(self, data):
+        if not isinstance(data, bytes):
+            data = data.encode()
         if self.chunked:
-            data = data.encode('utf-8')
             # add chunked size
-            chunked_size = "{!s}\r\n".format(int(len(data), 16))
+            chunked_size = "{!s}\r\n".format(hex(len(data)))
             chunk = b"".join([chunked_size.encode('utf-8'), data, b"\r\n"])
             self.client_sock.sendall(chunk)
         else:
@@ -148,3 +151,6 @@ class Response(object):
             self.send_headers()
         if self.chunked:
             self.write(b'')
+
+    def __str__(self):
+        return ''.join(self.headers)

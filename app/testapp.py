@@ -3,6 +3,7 @@
 from baseapp import App
 import sys
 import os
+from wsgiapp import wsgi_app
 
 
 class TestApp(App):
@@ -38,6 +39,9 @@ class TestApp(App):
             raise ImportError("wsgi app must be callable")
 
         return app
+
+    def load(self):
+        return wsgi_app
 
 def run():
     TestApp(sys.argv).run()

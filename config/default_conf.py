@@ -66,7 +66,7 @@ log_syslog = False
 log_syslog_facility = 'user'
 log_syslog_prefix = None
 log_syslog_to = 'unix:///var/run/syslog'
-logger_class = 'myserver.glogging.Logger'
+logger_class = 'logger.Logger'
 
 # The maximum number of requests a worker will process before restarting.
 max_requests = 0
@@ -88,6 +88,7 @@ pythonpath = None
 reload = True
 
 # The implementation that should be used to power :ref:`reload`.
+is_ssl = False
 reload_engine = 'auto'
 spew = False
 ssl_version = 3
@@ -136,10 +137,15 @@ secure_scheme_headers = {
 default_proc_name = 'myserver'
 
 
-# 服务器启动时的钩子
-def on_staring(server):
+# worker count changed hook
+def at_worker_count_changed(new, old):
     pass
-on_staring_hook = on_staring
+nworkers_changed = at_worker_count_changed
+
+# 服务器启动时的钩子
+def on_starting(server):
+    pass
+on_starting_hook = on_starting
 
 
 # 服务器重新载入时的钩子

@@ -63,7 +63,7 @@ try:
     from inotify.adapters import Inotify
     import inotify.constants
     has_inotify = True
-except ImportError:
+except (ImportError, AttributeError):
     has_inotify = False
 
 
