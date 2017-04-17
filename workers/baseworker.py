@@ -8,6 +8,8 @@ import utils
 import signal
 
 from reloader import reloaders
+import mmap
+from utils import set_now_mmap
 
 
 class BaseWorker(object):
@@ -35,7 +37,8 @@ class BaseWorker(object):
         self.reloader = None
         self.max_requests = config.get('max_requests') or sys.maxsize
 
-        self.last_heart_beat_time = time.time()
+        self.last_heart_beat_time = mmap.mmap(-1, 20)
+        set_now_mmap(self.last_heart_beat_time)
         self.alive = True
         self.booted = False
         self.aborted = False
@@ -111,7 +114,7 @@ class BaseWorker(object):
 
     def handle_abort(self, sig, frame):
         self.alive = False
-        self.config.get('worker_abort_hook')()
+        self.config.get('worker_abort_hook')(self)
         sys.exit(1)
 
     def load_wsgi(self):
@@ -121,7 +124,7 @@ class BaseWorker(object):
             raise e
 
     def i_am_alive(self):
-        self.last_heart_beat_time = time.time()
+        set_now_mmap(self.last_heart_beat_time)
 
     def handle_req_error(self, req, client, addr, exc):
         pass

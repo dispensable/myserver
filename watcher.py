@@ -12,6 +12,7 @@ from setproctitle import setproctitle
 import time
 from config.config import __version__
 from logger import Logger
+from utils import get_time_mmap
 
 
 class Watcher(object):
@@ -236,6 +237,7 @@ class Watcher(object):
 
     def manage_worker(self):
         is_num_equal = len(self.WORKERS) - self.num_of_workers
+
         if is_num_equal == 0:
             return
         elif is_num_equal < 0:
@@ -253,7 +255,6 @@ class Watcher(object):
             self.log.info("%s worker(s) active", str(active_worker_num))
 
     def spwnworker(self):
-
         # 实例化worker
         self.worker_age += 1
 
@@ -337,7 +338,7 @@ class Watcher(object):
 
         if timeout:
             for pid, worker in self.WORKERS.items():
-                if time.time() - worker.last_heart_beat_time > timeout:
+                if time.time() - get_time_mmap(worker.last_heart_beat_time) > timeout:
                     self.kill_worker(pid, signal.SIGKILL)
         return
 
