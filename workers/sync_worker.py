@@ -82,7 +82,10 @@ class SyncWorker(BaseWorker):
             # handle request
             self.handle_request(listener, request, client, addr)
         except Exception as e:
+            # TODO: handle errors
             raise e
+        finally:
+            client.close()
 
     def handle_request(self, listener, request, client, addr):
         try:
@@ -104,4 +107,8 @@ class SyncWorker(BaseWorker):
             time_used = time.time() - start_time
             self.log.access(resp, request, environ, time_used)
         except Exception as e:
+            # TODO: handle errors
             raise e
+        finally:
+            if hasattr(resp_iter, "close"):
+                resp_iter.close()

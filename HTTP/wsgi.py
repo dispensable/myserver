@@ -109,6 +109,13 @@ def init_env(request, client_sock, listener_sock, config, addr):
     WSGI_DICT['RAW_URI'] = request.path
     WSGI_DICT['REMOTE_ADDR'] = addr
 
+    # put request header in environ
+    for header in header_dict:
+        wsgi_key = 'HTTP_' + header.replace('-', '_').upper()
+        if wsgi_key in WSGI_DICT:
+            continue
+        WSGI_DICT[wsgi_key] = header_dict[header]
+
     # TODO: proxy
 
     expect = header_dict.get('expect', None)
