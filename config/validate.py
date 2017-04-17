@@ -142,7 +142,8 @@ schema = Schema(
         Optional('after_workernum_changed'): Use(validate_func),
         Optional('before_exec'): Use(validate_func),
         Optional('on_reload'): Use(validate_func),
-        Optional('nworkers_changed'): Use(validate_func)
+        Optional('nworkers_changed'): Use(validate_func),
+        Optional('before_worker_init'): Use(validate_func)
     },
     ignore_extra_keys=True
 )
