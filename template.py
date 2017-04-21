@@ -9,3 +9,15 @@ class Jinja2TemplateEngine(TemplateEngine):
 
     def __call__(self, *args, **kwargs):
         pass
+
+
+class MakoTemplateEngine(TemplateEngine):
+    def __init__(self):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        pass
+
+
+def render_template(temp_dir, **kwargs):
+    pass
