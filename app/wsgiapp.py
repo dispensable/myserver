@@ -1,12 +1,21 @@
 # -*- coding:utf-8 -*-
 
+from webframework.myframwork import MyApp, request, response
 
-def wsgi_app(environ, start_response):
-    print(environ)
-    status = "200 OK"
-    headers = [('Content-type', 'text/plain'), ('Content-length', 21)]
-    start_response(status, headers)
+wsgi_app = MyApp()
 
-    response = ['hello world\n', 'stranger\n']
 
-    return (line.encode() for line in response)
+@wsgi_app.route('/')
+def hello():
+    response.status_code = 200
+    response.status = str(response.status_code) + ' OK'
+    response.add_header('Content-Length', '11')
+    return 'hello world'
+
+
+@wsgi_app.route(r'/wiki/(?P<name>[A-Za-z0-9_]+)')
+def test(name):
+    response.status_code = 200
+    response.status = str(response.status_code) + ' OK'
+    response.add_header('Content-Length', '15')
+    return 'hello world' + name
