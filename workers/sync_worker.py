@@ -109,6 +109,3 @@ class SyncWorker(BaseWorker):
         except Exception as e:
             # TODO: handle errors
             raise e
-        finally:
-            if hasattr(resp_iter, "close"):
-                resp_iter.close()
