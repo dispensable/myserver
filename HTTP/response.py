@@ -34,7 +34,7 @@ class Response(object):
         self.status = status
 
         try:
-            self.status_code = self.status.split()[0]
+            self.status_code = self.status.split(' ')[0]
         except ValueError:
             self.status_code = None
 
