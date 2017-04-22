@@ -4,6 +4,7 @@ from .routin import Router
 from .request import RequestWrapper
 from .routin import Route
 from .response import ResponseWrapper
+from .error import HttpError
 
 
 request = RequestWrapper()
@@ -26,7 +27,7 @@ class MyApp(object):
     def wsgi(self, environ, start_response, exe_info=None):
         body = self.convert_to_wsgi(self.handle_req(environ))
         response.add_body(body)
-        start_response(response.status, response.headers)
+        start_response(response.status_line, response.headers)
         return response.body
 
     def handle_req(self, environ):
@@ -53,11 +54,15 @@ class MyApp(object):
             Iterable or Generators： 迭代器对象或者生成器对象，并调用next方法
         """
         if isinstance(respiter, str):
-            response.add_header('Content-Length', len(respiter))
+            response.add_header('Content-Length', str(len(respiter)), unique=True)
             respiter = [respiter.encode()]
             return respiter
         elif isinstance(respiter, list):
             return respiter
+        elif isinstance(respiter, HttpError):
+            response.status = respiter.status_code
+            response.headers = respiter.headers
+            return [respiter.body]
         else:
             raise ValueError('Unsupported body type.')
 
@@ -109,3 +114,7 @@ class MyApp(object):
 
     def run(self, port=8080, host='127.0.0.1'):
         pass
+
+
+def error(status_code, phrase=None):
+    return HttpError(status_code, phrase=phrase)
