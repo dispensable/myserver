@@ -4,7 +4,7 @@ from .routin import Router
 from .request import RequestWrapper
 from .routin import Route
 from .response import ResponseWrapper
-from .error import HttpError
+from .error import HttpError, MyFramworkException, RouteNotFoundException
 
 
 request = RequestWrapper()
@@ -37,7 +37,10 @@ class MyApp(object):
         response.init()
 
         # 匹配对应的路由
-        r_route, args = self.router.match(environ)
+        try:
+            r_route, args = self.router.match(environ)
+        except RouteNotFoundException:
+            return error(404)
 
         # 根据路由执行函数并返回值
         if args:
@@ -118,3 +121,7 @@ class MyApp(object):
 
 def error(status_code, phrase=None):
     return HttpError(status_code, phrase=phrase)
+
+
+def render_template():
+    pass

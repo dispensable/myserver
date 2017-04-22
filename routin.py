@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import re
+from .error import RouteNotFoundException
 
 PATTERN = re.compile(r'<(.*?)>')
 
@@ -19,8 +20,6 @@ class Router(object):
         return router.path
 
     def match(self, environ):
-        ret_route = None
-        ret_args = []
         env_path = environ.get('PATH_INFO', '/')
         method = environ.get('REQUEST_METHOD', 'GET')
         # 匹配出router
@@ -29,10 +28,8 @@ class Router(object):
                 continue
             is_match = re.match(route.path, env_path)
             if is_match:
-                ret_args = is_match.groupdict()
-                ret_route = route
-                break
-        return ret_route, ret_args
+                return route, is_match.groupdict()
+        raise RouteNotFoundException(env_path, method)
 
 
 class Route(object):

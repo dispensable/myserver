@@ -5,6 +5,15 @@ class MyFramworkException(Exception):
     pass
 
 
+class RouteNotFoundException(MyFramworkException):
+    def __init__(self, path, method):
+        self.path = path
+        self.method = method
+
+    def __str__(self):
+        return "{} {} didn't match any route.".format(self.method, self.path)
+
+
 class HeaderNotAllowed(MyFramworkException):
     def __init__(self, header, code):
         self.header = header
