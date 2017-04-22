@@ -1,6 +1,6 @@
 from .utils import LocalVar
 from http.cookies import SimpleCookie
-from .utils import _HTTP_STATUS_LINES
+from .utils import HTTP_CODES
 from .utils import sig_cookie
 import hashlib
 from .error import HeaderNotAllowed
@@ -92,7 +92,7 @@ class Response(object):
     @status.setter
     def status(self, code):
         if isinstance(code, int):
-            code, phrase = code, _HTTP_STATUS_LINES.get(code) or 'Unknown'
+            code, phrase = code, HTTP_CODES.get(code) or 'Unknown'
         elif ' ' in code:
             code, phrase = int(code.split()[0]), code.split()[1]
         else:
@@ -174,6 +174,6 @@ class Response(object):
 class ResponseWrapper(Response):
     init = Response.__init__
     status_code = LocalVar()
-    status = LocalVar()
+    status_phrase = LocalVar()
     headers = LocalVar()
     body = LocalVar()
