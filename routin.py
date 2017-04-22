@@ -22,8 +22,11 @@ class Router(object):
         ret_route = None
         ret_args = []
         env_path = environ.get('PATH_INFO', '/')
+        method = environ.get('REQUEST_METHOD', 'GET')
         # 匹配出router
         for route in self.routes:
+            if route.method != method:
+                continue
             is_match = re.match(route.path, env_path)
             if is_match:
                 ret_args = is_match.groupdict()
