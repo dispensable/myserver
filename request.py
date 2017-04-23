@@ -5,6 +5,9 @@ from json import load, JSONDecodeError
 from io import BytesIO
 from cgi import FieldStorage
 from .utils import FileUpload
+import hashlib
+from .utils import check_cookie
+
 
 class Request(object):
     """ A WSGI environ warper so we can easily access request property"""
@@ -30,7 +33,14 @@ class Request(object):
     @property
     def cookie(self):
         """ 返回SIMPLECOOKIE生成的SimpleCookie实例"""
-        return SimpleCookie(self.environ['HTTP_COOKIE'])
+        cookie = self.environ.get('HTTP_COOKIE')
+
+        if cookie:
+            return SimpleCookie(cookie)
+        return cookie
+
+    def check_cookie(self, cookie, secret, secret_level=hashlib.sha256):
+        return check_cookie(cookie, secret_key=secret, secret_level=secret_level)
 
     @property
     def method(self):

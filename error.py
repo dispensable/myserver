@@ -35,6 +35,14 @@ class UnknownFilterException(RouteException):
         return 'Unknown filter {}, try to add it?'.format(self.filter)
 
 
+class CookieAuthError(MyFramworkException):
+    def __init__(self, cookie):
+        self.cookie = cookie
+
+    def __str__(self):
+        return "Cookie {} not authenticated! ".format(self.cookie)
+
+
 class HttpError(Exception):
     def __init__(self, status_code, phrase=None):
         self.status_code = status_code
