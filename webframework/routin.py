@@ -45,7 +45,13 @@ class Router(object):
         raise RouteNotFoundException(env_path, method)
 
     def add_filter(self, filter_clas):
-        pass
+        """ Add a new filter to the route class.
+            name: filter name (str)
+            re: filter discard (use re)
+        """
+        if not isinstance(filter_clas, RouteFilter):
+            raise TypeError('Filter must be a filter class.')
+        Route.filter_pattern[filter_clas.name] = filter_clas.re
 
 
 class Route(object):

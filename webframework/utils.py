@@ -120,3 +120,25 @@ def check_cookie(cookie, secret_key, secret_level=hashlib.sha256):
         hmac.new(secret_key.encode(), msg, digestmod=secret_level).digest()
     )
     return calculated_sig == sig
+
+
+def makelist(obj):
+    if isinstance(obj, (tuple, list, set, dict)):
+        return list(obj)
+    elif obj:
+        return [obj]
+    else:
+        return []
+
+
+class CloseIter:
+    def __init__(self, new_iter, close=None):
+        self.new_iter = new_iter
+        self.close_callback = makelist(close)
+
+    def __iter__(self):
+        return iter(self.new_iter)
+
+    def close(self):
+        for func in self.close_callback:
+            func()

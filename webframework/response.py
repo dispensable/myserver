@@ -170,6 +170,26 @@ class Response(object):
         if hasattr(self.body, 'close'):
             self.body.close()
 
+    @property
+    def content_len(self):
+        return self.get_header('Content-Length')
+
+    @content_len.setter
+    def content_len(self, value):
+        if not isinstance(value, int):
+            raise TypeError("Content length must be int, get {!s}".format(value))
+        self.add_header('Content-Length', str(value), unique=True)
+
+    @property
+    def content_type(self):
+        return self.get_header('Content-Type')
+
+    @content_type.setter
+    def content_type(self, value):
+        if not isinstance(value, str):
+            raise TypeError("Content type must be string, get {!s}".format(value))
+        self.add_header('Content-Type', value)
+
 
 class ResponseWrapper(Response):
     init = Response.__init__

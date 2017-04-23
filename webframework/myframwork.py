@@ -4,7 +4,10 @@ from .routin import Router
 from .request import RequestWrapper
 from .routin import Route
 from .response import ResponseWrapper
-from .error import HttpError, MyFramworkException, RouteNotFoundException
+from .error import HttpError, RouteNotFoundException
+from json import dumps
+import itertools
+from .utils import CloseIter
 
 
 request = RequestWrapper()
@@ -56,18 +59,71 @@ class MyApp(object):
             FilesObject： FileWrapper
             Iterable or Generators： 迭代器对象或者生成器对象，并调用next方法
         """
-        if isinstance(respiter, str):
-            response.add_header('Content-Length', str(len(respiter)), unique=True)
-            respiter = [respiter.encode()]
-            return respiter
-        elif isinstance(respiter, list):
-            return respiter
+        if isinstance(respiter, dict):
+            response.content_type = 'application/json'
+            try:
+                content = dumps(respiter).encode()
+            except TypeError:
+                raise
+            response.content_len = len(content)
+            return [content]
+
+        elif not respiter:
+            response.content_len = 0
+            return []
+
+        elif isinstance(respiter, (tuple, list)) and \
+                isinstance(respiter[0], (str, bytes)):
+            respiter = respiter[0][0:0].join(respiter)
+            return self.convert_to_wsgi(respiter)
+
+        elif isinstance(respiter, str):
+            response.content_len = len(respiter.encode())
+            return [respiter]
+
+        elif isinstance(respiter, bytes):
+            response.content_len = len(respiter)
+            return [respiter]
+
         elif isinstance(respiter, HttpError):
             response.status = respiter.status_code
             response.headers = respiter.headers
             return [respiter.body]
+
+        elif hasattr(respiter, 'read'):
+            FileWrapper = request.environ.get('wsgi.file_wrapper')
+            return FileWrapper(respiter)
+
+        # iter
+        try:
+            iter_out = iter(respiter)
+            first = next(iter_out)
+
+            while not filter:
+                first = next(iter_out)
+
+        except StopIteration:
+            return self.convert_to_wsgi('')
+        except HttpError as e:
+            first = e
+        except (KeyboardInterrupt, SystemExit, MemoryError):
+            raise
+        except Exception as error:
+            first = HttpError(500, 'Unhandled exception')
+
+        if isinstance(first, HttpError):
+            return self.convert_to_wsgi(first)
+        elif isinstance(first, bytes):
+            new_respiter = itertools.chain([first], iter_out)
+        elif isinstance(first, str):
+            new_respiter = map(lambda x: x.encode(response.charset),
+                               itertools.chain([first], iter_out))
         else:
-            raise ValueError('Unsupported body type.')
+            return self.convert_to_wsgi(
+                HttpError(500, 'Unsupported iter type: {}'.format(type(first))))
+        if hasattr(respiter, 'close'):
+            new_respiter = CloseIter(new_respiter, iter_out.close)
+        return new_respiter
 
     def add_hook(self, hook):
         pass
