@@ -23,6 +23,18 @@ class HeaderNotAllowed(MyFramworkException):
         return "{!s} not allwoed in {!s} status code".format(self.header, self.code)
 
 
+class RouteException(MyFramworkException):
+    pass
+
+
+class UnknownFilterException(RouteException):
+    def __init__(self, filter_name):
+        self.filter = filter_name
+
+    def __str__(self):
+        return 'Unknown filter {}, try to add it?'.format(self.filter)
+
+
 class HttpError(Exception):
     def __init__(self, status_code, phrase=None):
         self.status_code = status_code

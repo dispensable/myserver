@@ -16,7 +16,7 @@ def hello():
     return '<h1>hello world!</h1>'
 
 
-@wsgi_app.route(r'/wiki/(?P<name>[A-Za-z0-9_]+)')
+@wsgi_app.route(r'/wiki/<name>')
 def test(name):
     response.status = 200
     response.add_header('Content-Length', '15')
