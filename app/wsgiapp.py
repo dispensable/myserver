@@ -2,6 +2,7 @@
 
 from webframework.myframwork import MyApp, request, response, error
 from webframework.template import render_template
+from webframework.utils import check_cookie
 
 wsgi_app = MyApp()
 
@@ -12,7 +13,14 @@ def hello():
     if request.cookie is None:
         response.set_cookie('wang', 'test', secret_key='wang')
     else:
-        print(request.cookie)
+        print('-----')
+        print(request.cookie['wang'].value)
+        is_passed = check_cookie(request.cookie['wang'].value, 'wang')
+        if is_passed:
+            print('Cookie check passed!')
+        else:
+            print('Cookie check failed!')
+
     return '<h1>hello world!</h1>'
 
 
