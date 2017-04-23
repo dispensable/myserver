@@ -10,6 +10,7 @@ import hmac
 
 
 class LocalVar(object):
+    """ descriptor for thread local response and request """
     def __init__(self):
         self.local_var = local()
 
@@ -24,6 +25,37 @@ class LocalVar(object):
 
     def __delete__(self, instance):
         del self.local_var.var
+
+
+class FilterDict:
+    """ Filter dict descriptor for Route class """
+    def __init__(self):
+        self.filter = {
+            'regular': r'(?P<{name}>[^/]+)',
+            'int': r'(?P<{name}>[0-9]+)',
+            'float': r'(?P<{name}>[0-9.]+)',
+            'path': r'(?P<{name}>.+)',
+        }
+
+    def __get__(self, instance, owner):
+        return self.filter.copy()
+
+    def __set__(self, instance, value):
+        raise AttributeError('Access denied')
+
+    def __delete__(self, instance):
+        raise AttributeError('Access denied')
+
+    def __getitem__(self, item):
+        return self.filter[item]
+
+    def __setitem__(self, key, value):
+        if key in self.filter:
+            raise ValueError('{!s} filter name already exists.'.format(key))
+        self.filter[key] = value
+
+    def __delitem__(self, key):
+        raise AttributeError('Access denied.')
 
 
 class FileUpload:
