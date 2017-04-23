@@ -37,7 +37,6 @@ class Router(object):
                     return route, {}
                 continue
 
-            print(route.path, env_path)
             # 动态路由匹配
             is_match = re.match(route.path, env_path)
             if is_match:

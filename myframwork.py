@@ -8,6 +8,7 @@ from .error import HttpError, RouteNotFoundException
 from json import dumps
 import itertools
 from .utils import CloseIter
+import traceback
 
 
 request = RequestWrapper()
@@ -23,32 +24,69 @@ class MyApp(object):
         self.hooks = {'before_request': [],
                       'after_request': [],
                       'before_first_request': []}
+        self.plugins = []
 
     def __call__(self, environ, start_response, exe_info=None):
         return self.wsgi(environ, start_response)
 
     def wsgi(self, environ, start_response, exe_info=None):
-        body = self.convert_to_wsgi(self.handle_req(environ))
-        response.add_body(body)
-        start_response(response.status_line, response.headers)
-        return response.body
+        try:
+            body = self.convert_to_wsgi(self.handle_req(environ))
+
+            if response.status in (100, 101, 204, 304) or \
+                            environ['REQUEST_METHOD'] == 'HEAD':
+                if hasattr(body, 'close'):
+                    body.close()
+                body = []
+
+            start_response(response.status_line, response.headers)
+            return body
+        except (KeyboardInterrupt, SystemExit, MemoryError):
+            raise
+        except Exception as e:
+            environ['wsgi.errors'].write(traceback.format_exc())
+            environ['wsgi.errors'].flush()
+
+            resp = HttpError(500, 'Internal Server Error',
+                             'Error Happened when handle {}'.format(
+                                 environ['PATH_INFO']),
+                             traceback.format_exc())
+
+            start_response(resp.status_line, resp.headers)
+            return [resp.body.encode()]
 
     def handle_req(self, environ):
         """ 处理请求 """
+        # 添加环境变量
+        environ['myserver.app'] = self
+
         # 创建全局request和response变量
         request.init(environ)
         response.init()
 
-        # 匹配对应的路由
         try:
+            self.trigger_hook('before_request')
             r_route, args = self.router.match(environ)
+            environ['myserver.handle'] = r_route
+            environ['myserver.route'] = r_route
+            environ['route.url_args'] = args
+
+            if args:
+                return r_route.call(**args)
+            return r_route.call()
         except RouteNotFoundException:
             return error(404)
-
-        # 根据路由执行函数并返回值
-        if args:
-            return r_route.call(**args)
-        return r_route.call()
+        except (KeyboardInterrupt, SystemExit, MemoryError):
+            raise
+        except Exception as e:
+            environ['wsgi.errors'].write(traceback.format_exc())
+            environ['wsgi.errors'].flush()
+            return error(500, 'Internal Server Error')
+        finally:
+            try:
+                self.trigger_hook('after_request')
+            except HttpError as e:
+                return e
 
     def convert_to_wsgi(self, respiter):
         """ 将各类返回值转化为wsgi兼容对象
@@ -125,32 +163,46 @@ class MyApp(object):
             new_respiter = CloseIter(new_respiter, iter_out.close)
         return new_respiter
 
-    def add_hook(self, hook):
-        pass
+    def add_hook(self, hookname, func):
+        self.hooks[hookname].append(func)
 
-    def remove_hook(self, hook):
-        pass
+    def remove_hook(self, hookname, func):
+        if hookname in self.hooks and func in self.hooks[hookname]:
+            self.hooks[hookname].remove(func)
 
     def trigger_hook(self, hook_name, *args, **kwargs):
-        pass
+        return [hook(*args, **kwargs) for hook in self.hooks[hook_name][:]]
 
     def hook(self, name):
-        pass
+        def wrapper(func):
+            if name in self.hooks:
+                self.add_hook(name, func)
+            return func
+        return wrapper
 
     def install(self, plugin):
-        pass
+        if hasattr(plugin, 'install'):
+            plugin.install(self)
+        if not callable(plugin) and \
+            not hasattr(plugin, 'apply'):
+            raise TypeError('Plugin must be callable or implement .apply() method')
+        self.plugins.append(plugin)
+        self.reset()
+        return plugin
 
     def uninstall(self, plugin):
         pass
 
-    def reset_routes(self, route=None):
+    def reset(self, route=None):
         pass
 
     def close(self):
-        pass
+        for plugin in self.plugins:
+            if hasattr(plugin, 'close'):
+                plugin.close()
 
     def match(self, environ):
-        pass
+        self.router.match(environ)
 
     def url_for(self, routename):
         pass
@@ -170,6 +222,26 @@ class MyApp(object):
             return func
 
         return wrapper
+
+    def get(self, path=None, method='GET', **options):
+        """ handy decorator with method get """
+        return self.route(path, method, **options)
+
+    def post(self, path=None, method='post', **options):
+        """ handy decorator with method post """
+        return self.route(path, method, **options)
+
+    def put(self, path=None, method='PUT', **options):
+        """ handy decorator with method put """
+        return self.route(path, method, **options)
+
+    def delete(self, path=None, method='DELETE', **options):
+        """ handy decorator with method delete """
+        return self.route(path, method, **options)
+
+    def patch(self, path=None, method='PATCH', **options):
+        """ handy decorator with method patch """
+        return self.route(path, method, **options)
 
     def run(self, port=8080, host='127.0.0.1'):
         pass

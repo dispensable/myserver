@@ -44,16 +44,19 @@ class CookieAuthError(MyFramworkException):
 
 
 class HttpError(Exception):
-    def __init__(self, status_code, phrase=None):
+    def __init__(self, status_code, phrase=None, body=None, traceback=None):
         self.status_code = status_code
         self.phrase = phrase or _HTTP_STATUS_LINES.get(status_code)
-        self.body = """
+        self.body = body or """
                 <h1>HTTP ERROR : {!s}</h1>
                 <p>REASON: {!s}</p>
                 <p>see <a href="http://127.0.0.1:8000">here for detail</a></p>
-                """.format(self.status_code, self.phrase)
+                <p>--------- traceback --------</p>
+                {traceback}
+                """.format(self.status_code, self.phrase, traceback=traceback)
         self.headers = [('Content-Type', 'text/html; charset=UTF-8'),
                         ('Content-Length', str(len(self.body)))]
+        self.status_line = str(self.status_code) + self.phrase
 
     def __str__(self):
         return self.body
