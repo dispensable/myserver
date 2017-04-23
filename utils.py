@@ -9,6 +9,11 @@ import pickle
 import hmac
 
 
+version_info = (0, 1, 0)
+__version__ = ".".join([str(v) for v in version_info])
+FRAMEWORK = "myframwork/%s" % __version__
+
+
 class LocalVar(object):
     """ descriptor for thread local response and request """
     def __init__(self):
