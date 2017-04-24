@@ -20,6 +20,9 @@ class LocalVar(object):
         self.local_var = local()
 
     def __get__(self, instance, owner):
+        if instance is None:
+            return self
+
         try:
             return self.local_var.var
         except ValueError:
@@ -43,6 +46,8 @@ class FilterDict:
         }
 
     def __get__(self, instance, owner):
+        if instance is None:
+            return self
         return self.filter.copy()
 
     def __set__(self, instance, value):
@@ -124,7 +129,7 @@ def check_cookie(cookie, secret_key, secret_level=hashlib.sha256):
     calculated_sig = base64.b64encode(
         hmac.new(secret_key.encode(), msg, digestmod=secret_level).digest()
     )
-    return calculated_sig == sig
+    return hmac.compare_digest(calculated_sig, sig)
 
 
 def makelist(obj):
@@ -147,3 +152,16 @@ class CloseIter:
     def close(self):
         for func in self.close_callback:
             func()
+
+
+class CachedProperty:
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value
