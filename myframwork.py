@@ -9,6 +9,10 @@ from json import dumps
 import itertools
 from .utils import CloseIter
 import traceback
+from .plugin.plugin import Plugin
+from .error import UninstallPluginsError
+from .plugin.template_plugin import MakoTemplatePlugin, Template
+import os
 
 
 request = RequestWrapper()
@@ -23,7 +27,8 @@ class MyApp(object):
         self.routes = []
         self.hooks = {'before_request': [],
                       'after_request': [],
-                      'before_first_request': []}
+                      'before_first_request': [],
+                      'app_reset': []}
         self.plugins = []
 
     def __call__(self, environ, start_response, exe_info=None):
@@ -181,20 +186,72 @@ class MyApp(object):
         return wrapper
 
     def install(self, plugin):
-        if hasattr(plugin, 'install'):
-            plugin.install(self)
-        if not callable(plugin) and \
-            not hasattr(plugin, 'apply'):
-            raise TypeError('Plugin must be callable or implement .apply() method')
+        if not isinstance(plugin, Plugin):
+            raise TypeError("Plugin must be a Plugin's subclass.")
+
+        plugin.setup(self)
         self.plugins.append(plugin)
         self.reset()
         return plugin
 
     def uninstall(self, plugin):
-        pass
+        """ Uninstall plugins.
+            if plugin is a instance, remove that instance;
+            if plugin is a Plugin class, remove all the instances with this class.
+            if plugin is a string , remove the instance with that string name.
+            if plugin is True, remove all plugins.
+        """
+        plugins_list = self.plugins
+        results = []
+
+        if isinstance(plugin, Plugin):
+            index = plugins_list.index(plugin)
+            del plugins_list[index]
+            plugin.close()
+            return plugin
+
+        elif issubclass(plugin, Plugin):
+            for index, plugin_instance in enumerate(plugins_list.copy()):
+                if isinstance(plugin_instance, Plugin):
+                    this_instance = plugins_list[index]
+                    del this_instance
+                    this_instance.close()
+                    results.append(this_instance)
+            return this_instance
+
+        elif isinstance(plugin, str):
+            for index, instance in enumerate(plugins_list.copy()):
+                if hasattr(instance, 'name'):
+                    if instance.name == plugin:
+                        this_instance = plugins_list[index]
+                        del this_instance
+                        this_instance.close()
+                        results.append(this_instance)
+            return results
+
+        elif plugin is True:
+            for index, instance in enumerate(plugins_list.copy()):
+                to_del = plugins_list[index]
+                del to_del
+                to_del.close()
+                results.append(to_del)
+            return results
+
+        else:
+            raise UninstallPluginsError(plugin)
 
     def reset(self, route=None):
-        pass
+        if route is None:
+            routes = self.routes
+        elif isinstance(route, Route):
+            routes = [route]
+        else:
+            routes = [r for r in self.routes if r.name == route]
+
+        for route in routes:
+            route.reset()
+
+        self.trigger_hook('app_reset')
 
     def close(self):
         for plugin in self.plugins:
@@ -251,5 +308,19 @@ def error(status_code, phrase=None):
     return HttpError(status_code, phrase=phrase)
 
 
-def render_template():
-    pass
+def render_template(*args, **kwargs):
+    """ 第一个参数被视为template name, {}视为关键字参数.
+        template_plugin: Template Plugin class name
+        template_dir:    templates directory (used to find template)
+
+        模板内部的关键字参数全部使用kwargs传入或者在位置参数位置传入dict
+    """
+    tname = args[0] if args else None
+
+    for dict_arg in args[1:]:
+        kwargs.update(dict_arg)
+
+    temp_plugin = kwargs.pop('template_plugin', MakoTemplatePlugin)
+    temp_dir = kwargs.pop('template_dir', os.getcwd()+'/templates')
+
+    return Template(tname, temp_plugin, temp_dir, **kwargs)
