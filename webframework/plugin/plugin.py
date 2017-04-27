@@ -17,7 +17,7 @@ class Plugin(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def __call__(self, callback):
+    def __call__(self, callback, route):
         """ Been called to apply directly to each route callback. """
         raise NotImplementedError
 
@@ -30,3 +30,5 @@ class Plugin(metaclass=ABCMeta):
         """ been called when uninstall this plugin """
         raise NotImplementedError
 
+    def __str__(self):
+        return 'Myframwork Plugin: {}'.format(self.name)

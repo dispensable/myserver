@@ -23,6 +23,27 @@ class HeaderNotAllowed(MyFramworkException):
         return "{!s} not allwoed in {!s} status code".format(self.header, self.code)
 
 
+class PluginError(MyFramworkException):
+    pass
+
+
+class PluginAlreadyExistsException(PluginError):
+    def __init__(self, plugin, msg=None):
+        self.plugin = plugin
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg or "{plugin} already exists.".format(plugin=self.plugin)
+
+
+class UninstallPluginsError(PluginError):
+    def __init__(self, plugin):
+        self.plugin = plugin
+
+    def __str__(self):
+        return 'Unexcepted plugin argv: {!s}'.format(self.plugin)
+
+
 class RouteException(MyFramworkException):
     pass
 
