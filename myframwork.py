@@ -304,10 +304,6 @@ class MyApp(object):
         pass
 
 
-def error(status_code, phrase=None):
-    return HttpError(status_code, phrase=phrase)
-
-
 def render_template(*args, **kwargs):
     """ 第一个参数被视为template name, {}视为关键字参数.
         template_plugin: Template Plugin class name
@@ -324,3 +320,16 @@ def render_template(*args, **kwargs):
     temp_dir = kwargs.pop('template_dir', os.getcwd()+'/templates')
 
     return Template(tname, temp_plugin, temp_dir, **kwargs)
+
+
+def error(status_code, phrase=None):
+    return HttpError(status_code, phrase=phrase)
+
+
+def abort(status_code, phrase=None):
+    return HttpError(status_code, phrase=phrase)
+
+
+def redirect(new_url):
+    response.status_code = 303
+    response.add_header(('Location', new_url))
