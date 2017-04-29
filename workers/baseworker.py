@@ -10,6 +10,10 @@ import signal
 from reloader import reloaders
 import mmap
 from utils import set_now_mmap
+from http.errors import *
+from ssl import SSLError
+from http.wsgi import default_environ
+from http.response import Response
 
 
 class BaseWorker(object):
@@ -37,8 +41,8 @@ class BaseWorker(object):
         self.reloader = None
         self.max_requests = config.get('max_requests') or sys.maxsize
 
-        self.last_heart_beat_time = mmap.mmap(-1, 20)
-        set_now_mmap(self.last_heart_beat_time)
+        self.heart_beat_mmap = mmap.mmap(-1, 20)
+        set_now_mmap(self.heart_beat_mmap)
         self.alive = True
         self.booted = False
         self.aborted = False
@@ -124,10 +128,62 @@ class BaseWorker(object):
             raise e
 
     def i_am_alive(self):
-        set_now_mmap(self.last_heart_beat_time)
+        set_now_mmap(self.heart_beat_mmap)
 
-    def handle_req_error(self, req, client, addr, exc):
-        pass
+    def handle_error(self, req, client, addr, exc):
+        request_start = time.time()
+        addr = addr or ('', -1)
+
+        if isinstance(exc, (InvalidRequestLine, InvalidRequestMethod,
+                            InvalidHTTPVersion, InvalidHeader, InvalidHeaderName,
+                            LimitRequestLine, LimitRequestHeaders,
+                            InvalidProxyLine, ForbiddenProxyRequest,
+                            SSLError)):
+            status_int = 400
+            reason = "Bad Request"
+
+            if isinstance(exc, InvalidRequestLine):
+                msg = "Invalid request line: {!s}".format(exc)
+            elif isinstance(exc, InvalidRequestMethod):
+                msg = "Invalid method: {!s}".format(exc)
+            elif isinstance(exc, InvalidHTTPVersion):
+                msg = "Invalid http version: {!s}".format(exc)
+            elif isinstance(exc, (InvalidHeaderName, InvalidHeader,)):
+                msg = str(exc)
+                if not req and hasattr(exc, "req"):
+                    req = exc.req
+            elif isinstance(exc, LimitRequestLine):
+                msg = str(exc)
+            elif isinstance(exc, LimitRequestHeaders):
+                msg = "Error parsing headers: {!s}".format(exc)
+            elif isinstance(exc, SSLError):
+                reason = "Forbidden"
+                msg = str(exc)
+                status_int = 403
+
+            msg = "Invalid request from ip={ip}: {error}"
+            self.log.debug(msg.format(ip=addr[0], error=str(exc)))
+        else:
+            if hasattr(req, 'uri'):
+                self.log.exception("Error hanling request {!s}".format(req.uri))
+            status_int = 500
+            reason = "Internal Server Error"
+            msg = ""
+
+        if req is not None:
+            request_time = time.time() - request_start
+            environ = default_environ(req, client, self.config)
+            environ['REMOTE_ADDR'] = addr[0]
+            environ['REMOTE_PORT'] = str(addr[1])
+            resp = Response(req, client, self.config)
+            resp.status = "{} {}".format(status_int, reason)
+            resp.length = len(msg)
+            self.log.access(resp, req, environ, request_time)
+
+        try:
+            write_error(client, status_int, reason, msg)
+        except:
+            self.log.debug("Failed to send error message.")
 
     def run(self):
         raise NotImplementedError

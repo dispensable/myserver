@@ -13,6 +13,7 @@ import time
 from config.config import __version__
 from logger import Logger
 from utils import get_time_mmap
+from .error import HaltServer
 
 
 class Watcher(object):
@@ -364,8 +365,20 @@ class Watcher(object):
                     continue
                 self.log.info("handling signal: %s", str(sig))
                 handler(self)
-        except Exception as e:
-            raise e
+        except StopIteration:
+            self.halt()
+        except KeyboardInterrupt:
+            self.halt()
+        except HaltServer as inst:
+            self.halt(inst.reason, inst.exit_status)
+        except SystemExit:
+            raise
+        except Exception:
+            self.log.info("Unhandled exception in main loop", exc_info=True)
+            self.stop(False)
+            if self.pidfile is not None:
+                self.pidfile.delete()
+            sys.exit(-1)
 
     def wait_worker(self):
         """ wait子进程，防止僵尸进程 """
@@ -381,12 +394,15 @@ class Watcher(object):
                     if os.WIFEXITED(status):
                         exit_code = os.WEXITSTATUS(status)
                         if exit_code == self.WORKER_BOOT_ERROR_EXIT:
-                            pass
+                            raise HaltServer('worker failed to boot',
+                                             self.WORKER_BOOT_ERROR_EXIT)
                         if exit_code == self.APP_LOAD_EXIT_ERROR:
-                            pass
+                            raise HaltServer('app failed to load',
+                                             self.APP_LOAD_EXIT_ERROR)
                     worker = self.WORKERS.pop(childid, None)
                     if not worker:
                         continue
+                    worker.heart_beat_mmap.close()
                     self.cfg.get('after_child_exit_hook')(self, worker)
         except OSError as e:
             if e.args[0] != errno.ECHILD:
@@ -416,6 +432,17 @@ class Watcher(object):
                     self.cfg.get('after_worker_exit_hook')(self, worker)
                     return
             raise
+
+    def halt(self, reason=None, exit_status=0):
+        """ halt watcher """
+        self.stop()
+        self.log.info("Shutting down: {!s}".format(self.master_name))
+        if reason is not None:
+            self.log.info("Reason: {!s}".format(reason))
+        if self.pidfile is not None:
+            self.pidfile.delete()
+        self.cfg.get('when_exit_server_hook')(self)
+        sys.exit(exit_status)
 
     def kill_all_workers(self, sig):
         for pid in self.WORKERS.keys():
