@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 import re
-from .error import RouteNotFoundException
+from .error import RouteNotFoundException, RouteReset
 from .error import UnknownFilterException
-from .utils import FilterDict
+from .utils import FilterDict, CachedProperty
 
 
 PATTERN = re.compile(r'<(.*?)>')
@@ -57,20 +57,47 @@ class Route(object):
 
     filter_pattern = FilterDict()
 
-    def __init__(self, path, method, callback, name, apply, skip, func, config):
+    def __init__(self, app, path, method, callback, name, apply_list, skip, **config):
+        self.app = app
         self.path = path
         self.method = method
         self.callback = callback
-        self.name = name
-        self.apply = apply
-        self.skip = skip
-        self.func = func
+        self.name = name or None
+        self.plugin_list = apply_list or []
+        self.skip = skip or []
         self.config = config
         self.trans_to_re()
 
-    @property
+    @CachedProperty
     def call(self):
-        return self.func
+        callback = self.callback
+        try:
+            for plugin in self.all_plugins:
+                callback = plugin.apply(callback, self)
+        except RouteReset:
+            del self.__dict__['call']
+            return self.call()
+        return callback
+
+    @property
+    def all_plugins(self):
+        unique = set()
+        for p in reversed(self.app.plugins + self.plugin_list):
+            if True in self.skip:
+                break
+            name = getattr(p, 'name', False)
+
+            # skip plugins we don't need
+            if name and (name in self.skip or name in unique):
+                continue
+            if p in self.skip or type(p) in self.skip:
+                continue
+            if name:
+                unique.add(name)
+            yield p
+
+    def reset(self):
+        self.__dict__.pop('call', None)
 
     @property
     def is_static(self):
@@ -123,6 +150,9 @@ class Route(object):
             pattern = r'<{}>'.format(name)
             path = re.sub(pattern, all_patterns[index], path)
         return path
+
+    def __str__(self):
+        return '<Route for path: {}>'.format(self.path)
 
 
 class RouteFilter(object):
