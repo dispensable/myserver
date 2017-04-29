@@ -5,6 +5,14 @@ class MyFramworkException(Exception):
     pass
 
 
+class InvailideReloader(MyFramworkException):
+    def __init__(self, reloader_name):
+        self.reloader = reloader_name
+
+    def __str__(self):
+        return 'Invalide reloader: {}'.format(self.reloader)
+
+
 class HeaderNotAllowed(MyFramworkException):
     def __init__(self, header, code):
         self.header = header
