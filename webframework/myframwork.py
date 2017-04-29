@@ -12,6 +12,9 @@ import traceback
 from .plugin.plugin import Plugin
 from .error import UninstallPluginsError
 from .plugin.template_plugin import MakoTemplatePlugin, Template
+from .plugin.json_plugin import JsonPlugin
+
+from .config.validate import schema
 import os
 
 
@@ -22,6 +25,7 @@ response = ResponseWrapper()
 class MyApp(object):
     """ WSGI app """
     def __init__(self, name='default_app'):
+        self.config = schema
         self.name = name
         self.router = Router()
         self.routes = []
@@ -30,6 +34,8 @@ class MyApp(object):
                       'before_first_request': [],
                       'app_reset': []}
         self.plugins = []
+        self.install(JsonPlugin())
+        self.install(MakoTemplatePlugin())
 
     def __call__(self, environ, start_response, exe_info=None):
         return self.wsgi(environ, start_response)
@@ -273,7 +279,7 @@ class MyApp(object):
                 return 'hello world' + str(name)
         """
         def wrapper(func):
-            this_route = Route(path, method, callback, name, apply, skip, func, config)
+            this_route = Route(self, path, method, func, name, apply, skip, **config)
             self.routes.append(this_route)
             self.router.add_route(this_route)
             return func

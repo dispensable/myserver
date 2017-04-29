@@ -5,15 +5,6 @@ class MyFramworkException(Exception):
     pass
 
 
-class RouteNotFoundException(MyFramworkException):
-    def __init__(self, path, method):
-        self.path = path
-        self.method = method
-
-    def __str__(self):
-        return "{} {} didn't match any route.".format(self.method, self.path)
-
-
 class HeaderNotAllowed(MyFramworkException):
     def __init__(self, header, code):
         self.header = header
@@ -46,6 +37,23 @@ class UninstallPluginsError(PluginError):
 
 class RouteException(MyFramworkException):
     pass
+
+
+class RouteNotFoundException(RouteException):
+    def __init__(self, path, method):
+        self.path = path
+        self.method = method
+
+    def __str__(self):
+        return "{} {} didn't match any route.".format(self.method, self.path)
+
+
+class RouteReset(RouteException):
+    def __init__(self, route):
+        self.route = route
+
+    def __str__(self):
+        return "Route {!s} has been reseted.".format(self.route)
 
 
 class UnknownFilterException(RouteException):
