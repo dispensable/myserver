@@ -14,9 +14,13 @@ from .error import UninstallPluginsError
 from .plugin.template_plugin import MakoTemplatePlugin, Template
 from .plugin.json_plugin import JsonPlugin
 
-from .config.validate import schema
+from .config.config import Config
+from reloader import reloaders
+from .error import InvailideReloader
 import os
-
+import sys
+import time
+import logging
 
 request = RequestWrapper()
 response = ResponseWrapper()
@@ -25,7 +29,8 @@ response = ResponseWrapper()
 class MyApp(object):
     """ WSGI app """
     def __init__(self, name='default_app'):
-        self.config = schema
+        self.config = Config()
+        self._override_config()
         self.name = name
         self.router = Router()
         self.routes = []
@@ -34,13 +39,52 @@ class MyApp(object):
                       'before_first_request': [],
                       'app_reset': []}
         self.plugins = []
+        self.debug = self.config.get('debug') or False
+        self.reload = self.config.get('reload') or False
+
+        if self.reload:
+            self.reloader = self.config.get('reloader')
+            self._init_reloader()
+
         self.install(JsonPlugin())
         self.install(MakoTemplatePlugin())
+        self._load_plugin()
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, environ, start_response, exe_info=None):
         return self.wsgi(environ, start_response)
 
+    def _init_reloader(self):
+        if self.reloader not in reloaders:
+            raise InvailideReloader(self.reloader)
+
+        def on_change(fname):
+            self.logger.info("Myframework reloading: %s modified", fname)
+            time.sleep(0.1)
+            sys.exit(0)
+
+        self.reloader = reloaders[self.reloader](callback=on_change)
+        self.reloader.start()
+
+    def _load_plugin(self):
+        """ load cli plugins """
+        plugins = self.config.get('plugin')
+        for plugin in plugins:
+            filename, plugin_name = plugin.split(':')
+            sys.path.append(os.getcwd())
+            try:
+                exec('from {} import {}'.format(filename, plugin_name))
+            except ImportError:
+                raise
+            self.install(exec(plugin_name))
+
+    def _override_config(self):
+        param = self.config.get('param')
+        if param:
+            self.config.override_config(param)
+
     def wsgi(self, environ, start_response, exe_info=None):
+        """ WSGI 入口 """
         try:
             body = self.convert_to_wsgi(self.handle_req(environ))
 

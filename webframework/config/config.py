@@ -12,7 +12,7 @@ __version__ = '0.1.0'
 
 
 class Config(object):
-    def __init__(self, argv):
+    def __init__(self, argv=None):
         self.cli_doc = CLI_DOC
         self.settings = {}
         self.argv = argv
@@ -80,6 +80,9 @@ class Config(object):
         if filename:
             return self.get_settings_from_file(filename)
         return None
+
+    def override_config(self, config):
+        self.settings.update(config)
 
     @staticmethod
     def get_settings_from_file(filename):
