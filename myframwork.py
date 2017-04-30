@@ -14,7 +14,6 @@ from .error import UninstallPluginsError
 from .plugin.template_plugin import MakoTemplatePlugin, Template
 from .plugin.json_plugin import JsonPlugin
 
-from .config.config import Config
 from reloader import reloaders
 from .error import InvailideReloader
 import os
@@ -29,8 +28,10 @@ response = ResponseWrapper()
 class MyApp(object):
     """ WSGI app """
     def __init__(self, name='default_app'):
-        self.config = Config()
-        self._override_config()
+        self.config = None
+        self.reload = None
+        self.reloader = None
+        self.debug = None
         self.name = name
         self.router = Router()
         self.routes = []
@@ -39,16 +40,8 @@ class MyApp(object):
                       'before_first_request': [],
                       'app_reset': []}
         self.plugins = []
-        self.debug = self.config.get('debug') or False
-        self.reload = self.config.get('reload') or False
-
-        if self.reload:
-            self.reloader = self.config.get('reloader')
-            self._init_reloader()
-
         self.install(JsonPlugin())
         self.install(MakoTemplatePlugin())
-        self._load_plugin()
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, environ, start_response, exe_info=None):
@@ -78,10 +71,24 @@ class MyApp(object):
                 raise
             self.install(exec(plugin_name))
 
+    def load_config(self, config):
+        self.config = config
+        self._override_config()
+        self.debug = self.config.get('debug') or False
+        self.reload = self.config.get('reload') or False
+        if self.reload:
+            self.reloader = self.config.get('reloader')
+            self._init_reloader()
+        self._load_plugin()
+
     def _override_config(self):
-        param = self.config.get('param')
-        if param:
-            self.config.override_config(param)
+        try:
+            param = self.config.get('param')
+        except AttributeError:
+            pass
+        else:
+            if param:
+                self.config.override_config(param)
 
     def wsgi(self, environ, start_response, exe_info=None):
         """ WSGI 入口 """
@@ -99,13 +106,14 @@ class MyApp(object):
         except (KeyboardInterrupt, SystemExit, MemoryError):
             raise
         except Exception as e:
-            environ['wsgi.errors'].write(traceback.format_exc())
+            errors = traceback.format_exc()
+            environ['wsgi.errors'].write(errors)
             environ['wsgi.errors'].flush()
 
             resp = HttpError(500, 'Internal Server Error',
                              'Error Happened when handle {}'.format(
                                  environ['PATH_INFO']),
-                             traceback.format_exc())
+                             errors)
 
             start_response(resp.status_line, resp.headers)
             return [resp.body.encode()]
@@ -134,9 +142,10 @@ class MyApp(object):
         except (KeyboardInterrupt, SystemExit, MemoryError):
             raise
         except Exception as e:
-            environ['wsgi.errors'].write(traceback.format_exc())
+            errors = traceback.format_exc()
+            environ['wsgi.errors'].write(errors)
             environ['wsgi.errors'].flush()
-            return error(500, 'Internal Server Error')
+            return error(500, 'Internal Server Error', errors)
         finally:
             try:
                 self.trigger_hook('after_request')
@@ -152,6 +161,10 @@ class MyApp(object):
             FilesObject： FileWrapper
             Iterable or Generators： 迭代器对象或者生成器对象，并调用next方法
         """
+        # Todo: 编码值使用动态确定 从respiter的header中生成
+        print('respiter of convert_to_wsgi: ')
+        print(respiter)
+
         if isinstance(respiter, dict):
             response.content_type = 'application/json'
             try:
@@ -159,7 +172,7 @@ class MyApp(object):
             except TypeError:
                 raise
             response.content_len = len(content)
-            return [content]
+            return [content.encode()]
 
         elif not respiter:
             response.content_len = 0
@@ -172,7 +185,7 @@ class MyApp(object):
 
         elif isinstance(respiter, str):
             response.content_len = len(respiter.encode())
-            return [respiter]
+            return [respiter.encode()]
 
         elif isinstance(respiter, bytes):
             response.content_len = len(respiter)
@@ -181,7 +194,7 @@ class MyApp(object):
         elif isinstance(respiter, HttpError):
             response.status = respiter.status_code
             response.headers = respiter.headers
-            return [respiter.body]
+            return [respiter.body.encode()]
 
         elif hasattr(respiter, 'read'):
             FileWrapper = request.environ.get('wsgi.file_wrapper')
@@ -372,8 +385,8 @@ def render_template(*args, **kwargs):
     return Template(tname, temp_plugin, temp_dir, **kwargs)
 
 
-def error(status_code, phrase=None):
-    return HttpError(status_code, phrase=phrase)
+def error(status_code, phrase=None, traceback=None):
+    return HttpError(status_code, phrase=phrase, traceback=traceback)
 
 
 def abort(status_code, phrase=None):
@@ -382,4 +395,5 @@ def abort(status_code, phrase=None):
 
 def redirect(new_url):
     response.status_code = 303
-    response.add_header(('Location', new_url))
+    response.add_header('Location', new_url, unique=True)
+
