@@ -12,7 +12,7 @@ __version__ = '0.1.0'
 
 
 class Config(object):
-    def __init__(self, argv=None):
+    def __init__(self, argv):
         self.cli_doc = CLI_DOC
         self.settings = {}
         self.argv = argv
@@ -45,7 +45,8 @@ class Config(object):
 
     @staticmethod
     def get_default_config_file():
-        config_path = os.path.join(os.path.dirname(os.getcwd()), 'config', 'default_conf.py')
+        config_path = os.path.join(os.path.dirname(os.getcwd()), 'webframework', 'config',
+                                   'default_conf.py')
         if os.path.exists(config_path):
             return config_path
         return None
@@ -58,6 +59,8 @@ class Config(object):
                 key = key[2:].replace('-', '_')
             elif '<' in key or '>' in key:
                 key = key[1:-1]
+            if isinstance(value, str):
+                value = value.lstrip()
             settings[key] = value
         if settings:
             self.settings = settings
@@ -71,7 +74,7 @@ class Config(object):
     def get_change_from_cli(self, cli_setting):
         cli_config = {}
         for key, value in cli_setting.items():
-            if self.default_conf[key] != value:
+            if self.default_conf.get(key) != value:
                 cli_config[key] = value
         return cli_config
 

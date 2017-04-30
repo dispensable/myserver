@@ -19,16 +19,16 @@ def validate_param(params):
 schema = Schema(
     {
         'bind': str,
-        'conf': Or(None, Use(open)),
+        'conf': str,
         'debug': bool,
         'help': bool,
-        'param': Or(None, validate_param),
+        Optional('param'): Or([], validate_param),
         Optional('plugin'): [str],
         'reload': bool,
         'server': str,
         'version': bool,
         'reloader': str,
-        '<package.module:app>': str
+        'package.module:app': str
     },
     ignore_extra_keys=True
 )

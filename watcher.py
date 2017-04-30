@@ -13,7 +13,7 @@ import time
 from config.config import __version__
 from logger import Logger
 from utils import get_time_mmap
-from .error import HaltServer
+from error import HaltServer
 
 
 class Watcher(object):
