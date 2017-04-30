@@ -10,8 +10,8 @@ import traceback
 class BaseApp(object):
     """ A layer between server app and framwork app.
     Load some config before server start"""
-    def __init__(self, argv):
-        self.callable = None
+    def __init__(self, argv=None, app=None):
+        self.callable = app
         self.config = None
         self.logger = None
         self.argv = argv
@@ -61,19 +61,26 @@ class BaseApp(object):
 class App(BaseApp):
 
     def load_all_config(self):
-        # 解析命令行配置
-        self.config.get_config_from_cli()
+        cfg = self.config
+        if self.argv:
+            # 解析命令行配置
+            cfg.get_config_from_cli()
 
         # 读取配置文件
-        filename = self.config.settings['config']
+        filename = cfg.settings['config']
 
         if filename:
-            config = self.config.get_settings_from_file(filename)
-            self.config.merge_cli_setting(self.config.settings, config)
+            config = cfg.get_settings_from_file(filename)
+            if self.argv:
+                cfg.merge_cli_setting(cfg.settings, config)
+            else:
+                cfg.validate_and_save(config)
         else:
-            self.config.merge_cli_setting(self.config.settings, self.config.default_conf)
+            if self.argv:
+                cfg.merge_cli_setting(cfg.settings, cfg.default_conf)
+            else:
+                cfg.validate_and_save(cfg.default_conf)
 
     def run(self):
         self.load_all_config()
-        print(self.config.settings)
         super(App, self).run()
