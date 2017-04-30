@@ -1,5 +1,6 @@
 from docopt import docopt
 # from ..utils import __version__
+import sys
 
 __version__ = '0.1.0'
 

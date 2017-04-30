@@ -1,4 +1,4 @@
-from ..utils import __version__
+__version__ = '0.1.0'
 
 
 bind = '127.0.0.1:8080'
