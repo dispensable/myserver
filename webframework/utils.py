@@ -120,7 +120,7 @@ def sig_cookie(name, value, secret_key, secret_level=hashlib.sha256):
     sig = base64.b64encode(
         hmac.new(secret_key.encode(), msg, digestmod=secret_level).digest()
     )
-    return b''.join([b'|', sig, b'?', msg]).encode()
+    return b''.join([b'|', sig, b'?', msg]).decode()
 
 
 def check_cookie(cookie, secret_key, secret_level=hashlib.sha256):
