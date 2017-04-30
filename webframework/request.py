@@ -7,10 +7,14 @@ from cgi import FieldStorage
 from .utils import FileUpload
 import hashlib
 from .utils import check_cookie
+from .error import HttpError
+from tempfile import TemporaryFile
 
 
 class Request(object):
     """ A WSGI environ warper so we can easily access request property"""
+
+    MEMFILE_MAX = 102400
 
     def __init__(self, environ=None):
         self.environ = {} if environ is None else environ
@@ -80,21 +84,68 @@ class Request(object):
                 raise e
         raise AttributeError('Not json body !')
 
+    def _body_iter(self, read, bufsize):
+        maxread = max(0, self.content_length)
+        while maxread:
+            part = read(min(maxread, bufsize))
+            if not part:
+                break
+            yield part
+            maxread -= len(part)
+
+    @staticmethod
+    def _chunked_iter(read, bufsize):
+        err = HttpError(400, "Error while paring chunked transfer body.")
+        rn, sem, bs = b'\r\n', b';', b''
+        while True:
+            header = read(1)
+            while header[-2:] != rn:
+                c = read(1)
+                header += c
+                if not c:
+                    raise err
+                if len(header) > bufsize:
+                    raise err
+            size, _, _ = header.partition(sem)
+            try:
+                maxread = int(size.strip().decode(), 16)
+            except ValueError:
+                raise err
+            if maxread == 0:
+                break
+            buff = bs
+            while maxread > 0:
+                if not buff:
+                    buff = read(min(maxread, bufsize))
+                part, buff = buff[:maxread], buff[maxread:]
+                if not part:
+                    raise err
+                yield part
+                maxread -= len(part)
+            if read(2) != rn:
+                raise err
+
     @property
     def body(self):
         """ 返回一个 BytesIO 对象， 后续访问只seek（0）后返回"""
-        body = self.environ['wsgi.input']
-        # 非第一次读取
-        if isinstance(body, BytesIO):
-            body.seek(0)
-            return body
-        # 第一次读取，替换input为BoytesIO对象
-        else:
-            body_data = body.read()
+        try:
+            read_func = self.environ['wsgi.input'].read
+        except KeyError:
             self.environ['wsgi.input'] = BytesIO()
-            body = self.environ['wsgi.input']
-            body.write(body_data)
-            return body
+            return self.environ['wsgi.input']
+        body_iter = self._chunked_iter if self.chunked else self._body_iter
+        body, body_size, is_temp_file = BytesIO(), 0, False
+        for part in body_iter(read_func, self.MEMFILE_MAX):
+            body.write(part)
+            body_size += len(part)
+            if not is_temp_file and body_size > self.MEMFILE_MAX:
+                body, tmp = TemporaryFile(mode='w+b'), body
+                body.write(tmp.getvalue())
+                del tmp
+                is_temp_file = True
+        self.environ['wsgi.input'] = body
+        body.seek(0)
+        return body
 
     @property
     def chunked(self):
@@ -135,12 +186,19 @@ class Request(object):
 
     @property
     def content_type(self):
-        return self.environ.get('HTTP_CONTENT_TYPE', '')
+        return self.environ.get('CONTENT_TYPE', '')
+
+    @property
+    def content_length(self):
+        length = self.environ.get('CONTENT_LENGTH', '')
+        return int(length) if length else None
 
     @property
     def form(self):
         """ use cgi fieldstorage 解析 multipart body and return a FileStorage object"""
-        if self.method.upper() == 'POST' and self.content_type.upper().startswith('MULTIPART/'):
+        if self.method.upper() == 'POST' and \
+                (self.content_type.upper().startswith('MULTIPART/') or
+                 self.content_type.upper().startswith('APPLICATION/')):
             form = FieldStorage(fp=self.body, environ=self.environ, keep_blank_values=True)
             return form
         else:
