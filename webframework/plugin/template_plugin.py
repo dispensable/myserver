@@ -1,6 +1,7 @@
 from .plugin import Plugin
 import os
 from ..error import PluginAlreadyExistsException
+from functools import wraps
 
 
 class Template:
@@ -49,12 +50,14 @@ class MakoTemplatePlugin(TemplatePlugin):
     def apply(self, callback, route):
         config = route.config
 
-        def wrapper():
-            result = callback()
+        @wraps(callback)
+        def wrapper(*args, **kwargs):
+            result = callback(*args, **kwargs)
             if isinstance(result, Template):
                 lookup = self.TemplateLookup(directories=result.dir, **config)
                 mytemplate = lookup.get_template(result.temp_name)
                 return mytemplate.render(**result.kwargs)
+            return callback(*args, **kwargs)
         return wrapper
 
     def close(self):

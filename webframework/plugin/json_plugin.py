@@ -1,6 +1,7 @@
 from .plugin import Plugin
 from ..error import PluginAlreadyExistsException
 from json import dumps
+from functools import wraps
 
 
 class JsonPlugin(Plugin):
@@ -22,11 +23,13 @@ class JsonPlugin(Plugin):
     def apply(self, callback, route):
         encoding = route.config.get('encoding') or 'utf-8'
 
-        def wrapper():
-            result = callback()
+        @wraps(callback)
+        def wrapper(*args, **kwargs):
+            result = callback(*args, **kwargs)
             if isinstance(result, dict):
-                result = dumps(result, encoding=encoding)
-            return result
+                result = dumps(result)
+                return result
+            return callback(*args, **kwargs)
 
         return wrapper
 
