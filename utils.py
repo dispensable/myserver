@@ -76,3 +76,16 @@ def write_chunk(sock, data):
     chunk_size = "%X\r\n" % len(data)
     chunk = b"".join([chunk_size.encode('utf-8'), data, b"\r\n"])
     sock.sendall(chunk)
+
+
+class CachedProperty:
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value

@@ -1,5 +1,20 @@
 from version import SERVER_SOFTWARE
 from email.utils import formatdate
+from warnings import warn
+from utils import CachedProperty
+import os, io
+
+try:
+    from os import sendfile
+except ImportError:
+    try:
+        from sendfile import sendfile
+    except ImportError:
+        warn('Can not find sendfile, use normal write method. '
+             'Try install pysendfile package or update your python version.')
+        sendfile = None
+
+BLKSIZE = 0x3FFFFFFF
 
 
 class Response(object):
@@ -145,6 +160,69 @@ class Response(object):
             self.client_sock.sendall(chunk)
         else:
             self.client_sock.sendall(data)
+
+    def write_file(self, file_like):
+        """ try to use sendfile system call to send file. else, write file normally. """
+        if not self.send_file(file_like):
+            for part in file_like:
+                self.write(file_like)
+
+    @CachedProperty
+    def is_ssl(self):
+        return self.config.get('is_ssl')
+
+    @CachedProperty
+    def can_sendfile(self):
+        return self.config.get('sendfile') is True and sendfile is not None
+
+    def send_file(self, file_like):
+        """ use system sendfile to write file efficiently """
+        # 能否使用相关系统调用
+        if not self.can_sendfile():
+            return False
+
+        # ssl
+        if self.is_ssl:
+            return False
+
+        # sendfile system call only senf file from fd to fd
+        if not hasattr(file_like, 'fileno'):
+            return False
+
+        fileno = file_like.fileno()
+
+        try:
+            offset = os.lseek(fileno, 0, os.SEEK_CUR)
+            if self.length is None:
+                filesize = os.fstat(fileno).st_size
+                if filesize == 0:
+                    return False
+
+                nbytes = filesize - offset
+            else:
+                nbytes = self.length
+        except (OSError, io.UnsupportedOperation):
+            return False
+
+        self.send_headers()
+
+        if self.is_chunked():
+            chunk_size = "%X\r\n" % nbytes
+            self.client_sock.sendall(chunk_size.encode())
+
+        sockno = self.client_sock.fileno()
+        sent = 0
+
+        while sent != nbytes:
+            count = min(nbytes - sent, BLKSIZE)
+            sent += sendfile(sockno, fileno, offset + sent, count)
+
+        if self.is_chunked():
+            self.client_sock.sendall(b"\r\n")
+
+        os.lseek(fileno, offset, os.SEEK_SET)
+
+        return True
 
     def close(self):
         if not self.has_header_sent:
