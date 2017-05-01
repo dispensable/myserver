@@ -7,6 +7,7 @@ import hashlib
 import base64
 import pickle
 import hmac
+import datetime, time
 
 
 version_info = (0, 1, 0)
@@ -165,3 +166,18 @@ class CachedProperty:
             value = self.func(instance)
             setattr(instance, self.func.__name__, value)
             return value
+
+
+def get_rfc_time(original_time):
+    return time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(original_time))
+
+
+def trans_rfc_to_date_time(rfc_time):
+    """
+    transfer frc time to seconds since 1970
+    >>> s = "Thu, 03 Oct 1997 17:15:00 GMT"
+    >>> k = time.strptime(s, "%a, %d %b %Y %H:%M:%S GMT")
+    >>> time.mktime(k)
+    >>> 875870100.0
+    """
+    return time.mktime(time.strptime(rfc_time, "%a, %d %b %Y %H:%M:%S GMT"))

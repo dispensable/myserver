@@ -77,9 +77,9 @@ class Response(object):
         if h_and_v:
             h, v = h_and_v
             rest, _ = v.split('charset=')
-            new_h_and_v = ('Content-Type', rest + 'charset=' + encoding)
+            new_h, new_v = 'Content-Type', rest + 'charset=' + encoding
             self.del_header(h)
-            self.add_body(new_h_and_v)
+            self.add_header(new_h, new_v)
 
     @property
     def status_line(self):
@@ -190,6 +190,15 @@ class Response(object):
             raise TypeError("Content type must be string, get {!s}".format(value))
         self.add_header('Content-Type', value)
 
+    @staticmethod
+    def iter_file_range(fp, offset, bytes, maxread=2 ** 20):
+        fp.seek(offset)
+        while bytes > 0:
+            part = fp.read(min(bytes, maxread))
+            if not part:
+                break
+            bytes -= len(part)
+            yield part
 
 class ResponseWrapper(Response):
     init = Response.__init__
