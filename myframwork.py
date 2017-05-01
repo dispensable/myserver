@@ -16,10 +16,13 @@ from .plugin.json_plugin import JsonPlugin
 
 from reloader import reloaders
 from .error import InvailideReloader
-import os
 import sys
 import time
 import logging
+import os
+import mimetypes
+from .utils import get_rfc_time, trans_rfc_to_date_time
+import hashlib
 
 request = RequestWrapper()
 response = ResponseWrapper()
@@ -397,3 +400,90 @@ def redirect(new_url):
     response.status_code = 303
     response.add_header('Location', new_url, unique=True)
 
+
+def static_file(filename, root, mimetype=True, download=False, charset='UTF-8', etag=None):
+    """
+    serve static files.
+
+    @route('/static/<filepath:path>')
+    def server_static(filepath):
+        return static_file(filepath, root='/path/to/your/static/files')
+
+    :param filename: file's filename
+    :param root: file's root path
+    :param mimetype: guess mimetype. if string, use as file type, if bool, use mime to guess file type.
+    :param download: download to check this file. if is a string,
+        use this string as download filename, if true, use original name.
+    :param charset: charset
+    :param etag: etag for efficient web
+    :return: Filelike object
+    """
+    root = os.path.join(os.path.abspath(root), '')
+    filename = os.path.abspath(os.path.join(root, filename.strip('\\/')))
+
+    if not filename.startswith(root):
+        return error(404, "Access denied!")
+    if not os.path.exists(filename) or os.path.isfile(filename):
+        return error(404, "File do not exist.")
+    if not os.access(filename, os.R_OK):
+        return error(403, "Access denied")
+
+    # 设置文件类型
+    if mimetype is True:
+        # string
+        if isinstance(download, str):
+            mimetype, encoding = mimetypes.guess_type(download)
+        else:
+            mimetype, encoding = mimetypes.guess_type(filename)
+        if encoding: response.add_header('Content-Encoding', encoding)
+
+    if mimetype:
+        if (mimetype[:5] == 'text/' or mimetype == 'application/javascript') \
+                and charset and charset not in mimetype:
+            mimetype += '; charset=%s' % charset
+        response.add_header('Content-Type', mimetype)
+
+    if download:
+        download = os.path.basename(filename if download is True else download)
+        response.add_header("Content-Disposition", "attachment; filename='%s'" % download)
+
+    stats = os.stat(filename)
+    response.add_header('Content-Length', str(stats.st_size))
+    response.add_header('Last-Modified', get_rfc_time(stats.st_mtime))
+    response.add_header('Date', get_rfc_time(time.gmtime()))
+
+    if etag is None:
+        etag = '%d:%d:%d:%d:%s' % (stats.st_dev, stats.st_ino, stats.st_mtime, stats.st_size, filename)
+        etag = hashlib.sha1(bytes(etag)).hexdigest()
+
+    if etag:
+        response.add_header('Etag', etag)
+        req_etag = request.get_environ('HTTP_IF_NONE_MATCH')
+        if req_etag and req_etag == etag:
+            response.status_code = 304
+            return
+
+    check_modify = request.get_environ('HTTP_IF_MODIFIED_SINCE')
+    if check_modify:
+        modify_time = trans_rfc_to_date_time(check_modify.split(';')[0].strip())
+    if modify_time is not None and modify_time >= stats.st_mtime:
+        response.status_code = 304
+        return
+
+    body = '' if request.method == 'HEAD' else open(filename, 'rb')
+
+    response.add_header('Accept-Ranges', 'bytes')
+    range_header = request.get_environ('HTTP_RANGE')
+    if range_header:
+        # 处理range请求
+        ranges = list(request.parse_range_header(range_header, stats.st_size))
+        if not ranges:
+            return error(416, "Request range not satisfied.")
+        offset, end = ranges[0]
+        response.add_header('Content-Range', 'bytes %d-%d/%d' % (offset, end-1, stats.st_size))
+        response.add_header('Content-Length', str(end - offset))
+        if body:
+            body = response.iter_file_range(body, offset, end - offset)
+            response.status_code = 206
+            return body
+    return body

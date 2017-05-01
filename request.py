@@ -242,6 +242,31 @@ class Request(object):
         except AttributeError:
             raise
 
+    def get_environ(self, env_item):
+        if not isinstance(env_item, str):
+            raise AttributeError('{} not exist.'.format(env_item))
+
+        return self.environ.get(env_item)
+
+    @staticmethod
+    def parse_range_header(header, maxlen=0):
+        """ Yield (start, end) ranges parsed from a HTTP Range header. Skip
+            unsatisfiable ranges. The end index is non-inclusive."""
+        if not header or header[:6] != 'bytes=': return
+        ranges = [r.split('-', 1) for r in header[6:].split(',') if '-' in r]
+        for start, end in ranges:
+            try:
+                if not start:  # bytes=-100    -> last 100 bytes
+                    start, end = max(0, maxlen - int(end)), maxlen
+                elif not end:  # bytes=100-    -> all but the first 99 bytes
+                    start, end = int(start), maxlen
+                else:  # bytes=100-200 -> bytes 100-200 (inclusive)
+                    start, end = int(start), min(int(end) + 1, maxlen)
+                if 0 <= start < end <= maxlen:
+                    yield start, end
+            except ValueError:
+                pass
+
 
 class RequestWrapper(Request):
     environ = LocalVar()
