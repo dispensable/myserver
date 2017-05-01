@@ -36,7 +36,7 @@ class WSGIErrorWrapper(io.RawIOBase):
         handlers = logger.handlers
         self.streams = []
 
-        if config.get('errorlog') == 'sys.stderr':
+        if config.get('log_file') == 'sys.stderr':
             self.streams.append(sys.stderr)
             handlers = handlers[1:]
 
@@ -99,7 +99,7 @@ def init_env(request, client_sock, listener_sock, config, addr):
     WSGI_DICT['wsgi.version'] = (1, 0)
     WSGI_DICT['wsgi.url_scheme'] = 'https' if config.get('ssl') else 'http'
     WSGI_DICT['wsgi.input'] = request.body
-    WSGI_DICT['wsgi.errors'] = WSGIErrorWrapper
+    WSGI_DICT['wsgi.errors'] = WSGIErrorWrapper(config)
     WSGI_DICT['wsgi.multithread'] = False
     WSGI_DICT['wsgi.multiprocess'] = config.get('workers') > 1
     WSGI_DICT['wsgi.run_once'] = False

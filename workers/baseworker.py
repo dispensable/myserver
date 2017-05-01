@@ -10,10 +10,10 @@ import signal
 from reloader import reloaders
 import mmap
 from utils import set_now_mmap
-from http.errors import *
+from HTTP.errors import *
 from ssl import SSLError
-from http.wsgi import default_environ
-from http.response import Response
+from HTTP.wsgi import default_environ
+from HTTP.response import Response
 
 
 class BaseWorker(object):

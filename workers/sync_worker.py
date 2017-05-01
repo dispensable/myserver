@@ -9,7 +9,7 @@ from HTTP.parser import RequestParser
 from HTTP import wsgi
 import time
 import socket
-import http.errors
+import HTTP.errors
 
 
 class SyncWorker(BaseWorker):
@@ -83,7 +83,7 @@ class SyncWorker(BaseWorker):
 
             # handle request
             self.handle_request(listener, request, client, addr)
-        except http.errors.NoMoreData as e:
+        except HTTP.errors.NoMoreData as e:
             self.log.debug("Ignored premature client disconnection {}".format(e))
         except StopIteration as e:
             self.log.debug("Closing connection. {}".format(e))

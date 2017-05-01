@@ -339,7 +339,7 @@ class Watcher(object):
 
         if timeout:
             for pid, worker in self.WORKERS.items():
-                if time.time() - get_time_mmap(worker.last_heart_beat_time) > timeout:
+                if time.time() - get_time_mmap(worker.heart_beat_mmap) > timeout:
                     self.kill_worker(pid, signal.SIGKILL)
         return
 
