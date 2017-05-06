@@ -148,7 +148,7 @@ def default_environ(req, sock, cfg):
     env = base_environ(cfg)
     env.update({
         "wsgi.input": req.body,
-        "gunicorn.socket": sock,
+        "myserver.socket": sock,
         "REQUEST_METHOD": req.method,
         "QUERY_STRING": req.query,
         "RAW_URI": req.uri,
