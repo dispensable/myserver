@@ -1,0 +1,1078 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>服务器选项配置 &#8212; MyServer 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="FAQ" href="FAQ.html" />
+    <link rel="prev" title="安装" href="install_and_run.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="id1">
+<h1>服务器选项配置<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id2">
+<h2>从命令行配置<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>使用命令行-h选项可查看所有可配置项：</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>$ myserver -h
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>从配置文件配置<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>使用以下命令指定配置文件</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>$ myserver -c &lt;configfile&gt;
+</pre></div>
+</div>
+<p>配置文件为普通的python文件，你可以在`/myserver/config/default_conf.py`查看所有可配置项。
+配置文件应该是一个python模块。具体可配置选项如下：</p>
+<p># default config in file</p>
+<div class="section" id="access-logfile">
+<h3>access_logfile<a class="headerlink" href="#access-logfile" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值：None</p>
+<p>可选值：文件绝对路径</p>
+<p>说明：该文件用来写入所有处理的连接记录，记录格式如下</p>
+<p>示例：access_logfile = &#8216;/tmp/log&#8217;</p>
+</div></blockquote>
+</div>
+<div class="section" id="access-logformat">
+<h3>access_logformat<a class="headerlink" href="#access-logformat" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值：&#8217;%(h)s %(l)s %(u)s %(t)s &#8220;%(r)s&#8221; %(s)s %(b)s &#8220;%(f)s&#8221; &#8220;%(a)s&#8221;&#8217;</p>
+<p>可选值：<a class="reference external" href="http://httpd.apache.org/docs/current/mod/mod_log_config.html">Apache log format</a></p>
+<p>说明：决定接入连接的log格式</p>
+</div></blockquote>
+</div>
+<div class="section" id="backlog">
+<h3>backlog<a class="headerlink" href="#backlog" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值：2048</p>
+<p>可选值：整数，根据使用的内核backlog队列长度决定最大数值</p>
+<p>说明：backlog是未决连接的数量，客户端可能在服务器调用accept()之前调用connect()，
+服务器忙于处理其他客户端的时候，将会产生一个悬而未决的连接。backlog就是用来指定需要保存的连接信息的队列的长度。</p>
+</div></blockquote>
+</div>
+<div class="section" id="bind">
+<h3>bind<a class="headerlink" href="#bind" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值：&#8216;127.0.0.1:8000&#8217;</p>
+<p>可选值：ipv4地址和相关网络端口</p>
+<p>说明：服务器绑定的本地地址</p>
+</div></blockquote>
+</div>
+<div class="section" id="ssl">
+<h3>ssl<a class="headerlink" href="#ssl" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值： False</p>
+<p>可选值： True/False</p>
+<p>说明： 是否启用ssl</p>
+</div></blockquote>
+</div>
+<div class="section" id="ca-certs">
+<h3>ca_certs<a class="headerlink" href="#ca-certs" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值： None</p>
+<p>可选值： 证书路径</p>
+<p>说明： CA证书所在的系统路径</p>
+</div></blockquote>
+</div>
+<div class="section" id="capture-output">
+<h3>capture_output<a class="headerlink" href="#capture-output" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 是否捕获输出</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">capture_output</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cert-reqs">
+<h3>cert_reqs<a class="headerlink" href="#cert-reqs" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 0</p>
+<p>可选值: 0/1</p>
+<p>说明: 是否需要客户端证书</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">cert_reqs</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="certfile">
+<h3>certfile<a class="headerlink" href="#certfile" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: 文件路径</p>
+<p>说明: ssl证书文件</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">certfile</span> <span class="o">=</span> <span class="s1">&#39;/path/to/ca&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="chdir">
+<h3>chdir<a class="headerlink" href="#chdir" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;/Users/apple&#8217;</p>
+<p>可选值: app 所在路径</p>
+<p>说明: app所在路径</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">chdir</span> <span class="o">=</span> <span class="s1">&#39;/Users/apple&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="check-config">
+<h3>check_config<a class="headerlink" href="#check-config" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 检查配置文件是否错误</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">check_config</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ciphers">
+<h3>ciphers<a class="headerlink" href="#ciphers" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;TLSv1&#8217;</p>
+<p>可选值: ssl版本 <a class="footnote-reference" href="#id5" id="id4">[1]</a></p>
+</div></blockquote>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[1]</a></td><td><p class="first">见 <a href="#id17"><span class="problematic" id="id18">`SSL and TLS version&lt;https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols&gt;`_</span></a></p>
+<p>说明: <a href="#id19"><span class="problematic" id="id20">`TSL&lt;https://tools.ietf.org/html/rfc5246&gt;`_</span></a></p>
+<p class="last">示例:</p>
+</td></tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ciphers</span> <span class="o">=</span> <span class="s1">&#39;TLSv1&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="config">
+<h3>config<a class="headerlink" href="#config" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: 配置文件路径</p>
+<p>说明: 讲从本路径加载配置文件</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="s1">&#39;/your/conf/file.py&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="daemon">
+<h3>daemon<a class="headerlink" href="#daemon" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 是否将本进程设置为守护进程</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="do-handshake-on-connect">
+<h3>do_handshake_on_connect<a class="headerlink" href="#do-handshake-on-connect" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 是否在ssl连接时握手 <a class="footnote-reference" href="#id7" id="id6">[2]</a></p>
+</div></blockquote>
+<table class="docutils footnote" frame="void" id="id7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[2]</a></td><td><p class="first">参见`ssl module&lt;<a class="reference external" href="https://docs.python.org/3/library/ssl.html#ssl.wrap_socket">https://docs.python.org/3/library/ssl.html#ssl.wrap_socket</a>&gt;`_</p>
+<p class="last">示例:</p>
+</td></tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">do_handshake_on_connect</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="enable-stdio-inheritance">
+<h3>enable_stdio_inheritance<a class="headerlink" href="#enable-stdio-inheritance" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 是否启用标准输出继承，启用后子进程将继承父进程的stdio</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">enable_stdio_inheritance</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="env">
+<h3>env<a class="headerlink" href="#env" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: []</p>
+<p>可选值: key=value</p>
+<p>说明: 输入的键值对将覆盖相关的环境变量</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">env</span> <span class="o">=</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="forwarded-allow-ips">
+<h3>forwarded_allow_ips<a class="headerlink" href="#forwarded-allow-ips" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;127.0.0.1&#8217;</p>
+<p>可选值: ipv4地址</p>
+<p>说明: 允许转发ip</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">forwarded_allow_ips</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="graceful-timeout">
+<h3>graceful_timeout<a class="headerlink" href="#graceful-timeout" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 30</p>
+<p>可选值: int &gt; 0 （s）</p>
+<p>说明: 使用term信号退出时，清理进程的定时器时间，若超时后仍未结束，将使用kill杀死进程，单位为秒</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">graceful_timeout</span> <span class="o">=</span> <span class="mi">30</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="group">
+<h3>group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 20</p>
+<p>可选值: 进程组id</p>
+<p>说明: 设置后进程组id为该id</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">group</span> <span class="o">=</span> <span class="mi">20</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="help">
+<h3>help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 是否显示帮助信息，使用-h亦可</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">help</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="initgroups">
+<h3>initgroups<a class="headerlink" href="#initgroups" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 如果为真，将设置所有的worker进程组的ACL</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">initgroups</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="keep-alive">
+<h3>keep_alive<a class="headerlink" href="#keep-alive" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 2</p>
+<p>可选值: int</p>
+<p>说明: 保持连接的等待秒数，超时后讲断开连接</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">keep_alive</span> <span class="o">=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="keyfile">
+<h3>keyfile<a class="headerlink" href="#keyfile" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: ssl key 文件</p>
+<p>说明: ssl key file</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">keyfile</span> <span class="o">=</span> <span class="s1">&#39;/your/key/file&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="limit-request-field-size">
+<h3>limit_request_field_size<a class="headerlink" href="#limit-request-field-size" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 8190</p>
+<p>可选值: int &gt; 0</p>
+<p>说明: 请求体的字节数</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">limit_request_field_size</span> <span class="o">=</span> <span class="mi">8190</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="limit-request-fields">
+<h3>limit_request_fields<a class="headerlink" href="#limit-request-fields" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 100</p>
+<p>可选值: int &gt; 0</p>
+<p>说明: 请求体的headers数量限制</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">limit_request_fields</span> <span class="o">=</span> <span class="mi">100</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="limit-request-line">
+<h3>limit_request_line<a class="headerlink" href="#limit-request-line" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 4094</p>
+<p>可选值: int &gt; 0</p>
+<p>说明: 请求体的最大请求行数（用字节计算）</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">limit_request_line</span> <span class="o">=</span> <span class="mi">4094</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="log-config">
+<h3>log_config<a class="headerlink" href="#log-config" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: log 配置文件</p>
+<p>说明: log 配置文件</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">log_config</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="log-file">
+<h3>log_file<a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: sys.stderr</p>
+<p>可选值: log file</p>
+<p>说明: log的输出文件</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">log_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="log-level">
+<h3>log_level<a class="headerlink" href="#log-level" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;info&#8217;</p>
+<p>可选值: critical/error/warning/info/debug</p>
+<p>说明: log 级别</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">log_level</span> <span class="o">=</span> <span class="s1">&#39;info&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="log-syslog">
+<h3>log_syslog<a class="headerlink" href="#log-syslog" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 是否将log输出到syslog</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">log_syslog</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="log-syslog-facility">
+<h3>log_syslog_facility<a class="headerlink" href="#log-syslog-facility" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;user&#8217;</p>
+<p>可选值: <a href="#id21"><span class="problematic" id="id22">`RFC3164&lt;https://tools.ietf.org/html/rfc3164#section-4.1.1&gt;`_</span></a></p>
+<p>说明: syslog facility</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">log_syslog_facility</span> <span class="o">=</span> <span class="s1">&#39;user&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="log-syslog-prefix">
+<h3>log_syslog_prefix<a class="headerlink" href="#log-syslog-prefix" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: 字符串</p>
+<p>说明: syslog 前缀</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">log_syslog_prefix</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="log-syslog-to">
+<h3>log_syslog_to<a class="headerlink" href="#log-syslog-to" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;unix:///var/run/syslog&#8217;</p>
+<p>可选值: unix域套接字</p>
+<p>说明: syslog接收地址</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">log_syslog_to</span> <span class="o">=</span> <span class="s1">&#39;unix:///var/run/syslog&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="logger-class">
+<h3>logger_class<a class="headerlink" href="#logger-class" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;logger.Logger&#8217;</p>
+<p>可选值: logger类</p>
+<p>说明: 使用的logger类</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">logger_class</span> <span class="o">=</span> <span class="s1">&#39;logger.Logger&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="max-requests">
+<h3>max_requests<a class="headerlink" href="#max-requests" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 0</p>
+<p>可选值: int</p>
+<p>说明: worker处理请求的总数限制（超过后将重启worker）</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">max_requests</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="max-requests-jitter">
+<h3>max_requests_jitter<a class="headerlink" href="#max-requests-jitter" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 0</p>
+<p>可选值: int</p>
+<p>说明: 单个worker能接收的请求总数的抖动值</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">max_requests_jitter</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="name">
+<h3>name<a class="headerlink" href="#name" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: 字符串</p>
+<p>说明: 进程名称</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="no-sendfile">
+<h3>no_sendfile<a class="headerlink" href="#no-sendfile" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 禁用`sendfile&lt;<a class="reference external" href="https://www.ibm.com/developerworks/cn/linux/l-cn-zerocopy2/">https://www.ibm.com/developerworks/cn/linux/l-cn-zerocopy2/</a>&gt;`_ 系统调用</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">no_sendfile</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="paster">
+<h3>paster<a class="headerlink" href="#paster" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值:</p>
+<p>说明:</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">paster</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pid">
+<h3>pid<a class="headerlink" href="#pid" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: 字符串</p>
+<p>说明: pid file的名称</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">pid</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="preload">
+<h3>preload<a class="headerlink" href="#preload" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: True</p>
+<p>可选值: True/False</p>
+<p>说明: 是否需要提前预加载应用</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">preload</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="proxy-allow-from">
+<h3>proxy_allow_from<a class="headerlink" href="#proxy-allow-from" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;127.0.0.1&#8217;</p>
+<p>可选值: ipv4地址</p>
+<p>说明: 允许的转发地址</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">proxy_allow_from</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="proxy-protocol">
+<h3>proxy_protocol<a class="headerlink" href="#proxy-protocol" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明:</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">proxy_protocol</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pythonpath">
+<h3>pythonpath<a class="headerlink" href="#pythonpath" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: 路径</p>
+<p>说明: Python解释器路径</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">pythonpath</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reload">
+<h3>reload<a class="headerlink" href="#reload" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: True</p>
+<p>可选值: True/False</p>
+<p>说明: 文件变化时是否自动重启worker</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nb">reload</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="is-ssl">
+<h3>is_ssl<a class="headerlink" href="#is-ssl" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 是否启用SSL</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">is_ssl</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reload-engine">
+<h3>reload_engine<a class="headerlink" href="#reload-engine" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;auto&#8217;</p>
+<p>可选值: auto/inotify/poll</p>
+<p>说明: auto 自动根据平台选择重新载入机制（inotify &gt; poll)</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">reload_engine</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="spew">
+<h3>spew<a class="headerlink" href="#spew" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值:</p>
+<p>说明:</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">spew</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ssl-version">
+<h3>ssl_version<a class="headerlink" href="#ssl-version" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 3</p>
+<p>可选值: see <a href="#id23"><span class="problematic" id="id24">`TSL AND SSL VERSION&lt;https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols&gt;`_</span></a></p>
+<p>说明: SSL 版本</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ssl_version</span> <span class="o">=</span> <span class="mi">3</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="statsd-host">
+<h3>statsd_host<a class="headerlink" href="#statsd-host" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值:</p>
+<p>说明:</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">statsd_host</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="statsd-prefix">
+<h3>statsd_prefix<a class="headerlink" href="#statsd-prefix" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8220;&#8221;</p>
+<p>可选值:</p>
+<p>说明:</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">statsd_prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="suppress-ragged-eofs">
+<h3>suppress_ragged_eofs<a class="headerlink" href="#suppress-ragged-eofs" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值:</p>
+<p>说明:</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">suppress_ragged_eofs</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="threads">
+<h3>threads<a class="headerlink" href="#threads" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 1</p>
+<p>可选值: int</p>
+<p>说明: 线程数量</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">threads</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="timeout">
+<h3>timeout<a class="headerlink" href="#timeout" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 30</p>
+<p>可选值: int</p>
+<p>说明: 超时后worker将被杀死</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">timeout</span> <span class="o">=</span> <span class="mi">30</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="umask">
+<h3>umask<a class="headerlink" href="#umask" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 0</p>
+<p>可选值: int</p>
+<p>说明: 权限掩码</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">umask</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="user">
+<h3>user<a class="headerlink" href="#user" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 501</p>
+<p>可选值: int</p>
+<p>说明: worker进程将以该user运行</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="mi">501</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="version">
+<h3>version<a class="headerlink" href="#version" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: False</p>
+<p>可选值: True/False</p>
+<p>说明: 是否显示版本号</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">version</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="worker-class">
+<h3>worker_class<a class="headerlink" href="#worker-class" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: &#8216;sync&#8217;</p>
+<p>可选值: sync</p>
+<p>说明: worker类型</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">worker_class</span> <span class="o">=</span> <span class="s1">&#39;sync&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="worker-connections">
+<h3>worker_connections<a class="headerlink" href="#worker-connections" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 1000</p>
+<p>可选值: int</p>
+<p>说明: 最大并发用户数</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">worker_connections</span> <span class="o">=</span> <span class="mi">1000</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="worker-tmp-dir">
+<h3>worker_tmp_dir<a class="headerlink" href="#worker-tmp-dir" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: tmp url</p>
+<p>说明: worker创建临时文件的目录</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">worker_tmp_dir</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="workers">
+<h3>workers<a class="headerlink" href="#workers" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: 4</p>
+<p>可选值: int &gt;= 1</p>
+<p>说明: worker数量</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">workers</span> <span class="o">=</span> <span class="mi">4</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tmp-upload-dir">
+<h3>tmp_upload_dir<a class="headerlink" href="#tmp-upload-dir" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值: None</p>
+<p>可选值: tmp dir</p>
+<p>说明: 上传文件暂存目录</p>
+<p>示例:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">tmp_upload_dir</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+<p>secure_scheme_headers</p>
+<blockquote>
+<div><p><a href="#id8"><span class="problematic" id="id9">|</span></a>默认值：{
+|    &#8220;X-FORWARDED-PROTOCOL&#8221;: &#8220;ssl&#8221;,
+<a href="#id10"><span class="problematic" id="id11">|</span></a>&#8220;X-FORWARDED-PROTO&#8221;: &#8220;https&#8221;,
+<a href="#id12"><span class="problematic" id="id13">|</span></a>&#8220;X-FORWARDED-SSL&#8221;: &#8220;on&#8221;
+<a href="#id14"><span class="problematic" id="id15">|</span></a>}</p>
+<p>可选值：设置该字典的相关header</p>
+<p>说明：转发代理用来提示该链接是ssl连接的代理头部</p>
+<p>示例：</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">secure_scheme_headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;X-FORWARDED-PROTOCOL&quot;</span><span class="p">:</span> <span class="s2">&quot;ssl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;X-FORWARDED-PROTO&quot;</span><span class="p">:</span> <span class="s2">&quot;https&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;X-FORWARDED-SSL&quot;</span><span class="p">:</span> <span class="s2">&quot;on&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="default-proc-name">
+<h3>default_proc_name<a class="headerlink" href="#default-proc-name" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>默认值： &#8216;myserver&#8217;</p>
+<p>可选值： 字符串</p>
+<p>说明： 进程名</p>
+<p>示例：</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">default_proc_name</span> <span class="o">=</span> <span class="s1">&#39;your proccess name&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id16">
+<h3>服务器钩子<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<p>服务器钩子用来在特定时期触发，可以自定义钩子的内容，传递的参数已经在示例函数中</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># worker count changed hook</span>
+<span class="k">def</span> <span class="nf">at_worker_count_changed</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+     <span class="k">pass</span>
+<span class="n">nworkers_changed</span> <span class="o">=</span> <span class="n">at_worker_count_changed</span>
+
+<span class="c1"># 服务器启动时的钩子</span>
+<span class="k">def</span> <span class="nf">on_starting</span><span class="p">(</span><span class="n">server</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">on_starting_hook</span> <span class="o">=</span> <span class="n">on_starting</span>
+
+
+<span class="c1"># 服务器重新载入时的钩子</span>
+<span class="k">def</span> <span class="nf">on_reload</span><span class="p">(</span><span class="n">server</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">on_reload_hook</span> <span class="o">=</span> <span class="n">on_reload</span>
+
+
+<span class="c1"># 服务器启动之后的钩子</span>
+<span class="k">def</span> <span class="nf">when_booted</span><span class="p">(</span><span class="n">server</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">on_booted_hook</span> <span class="o">=</span> <span class="n">when_booted</span>
+
+
+<span class="c1"># worker fork 前的钩子</span>
+<span class="k">def</span> <span class="nf">before_worker_fork</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">worker</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">before_fork_worker</span> <span class="o">=</span> <span class="n">before_worker_fork</span>
+
+
+<span class="c1"># worker fork之后的钩子</span>
+<span class="k">def</span> <span class="nf">after_worker_forked</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">worker</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">after_worker_fork</span> <span class="o">=</span> <span class="n">after_worker_forked</span>
+
+
+<span class="c1"># worker初始化完成后的钩子</span>
+<span class="k">def</span> <span class="nf">after_worker_init</span><span class="p">(</span><span class="n">worker</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">after_worker_inited</span> <span class="o">=</span> <span class="n">after_worker_init</span>
+
+<span class="c1"># before worker init</span>
+<span class="k">def</span> <span class="nf">before_worker_init</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="n">before_worker_init</span> <span class="o">=</span> <span class="n">before_worker_init</span>
+
+
+<span class="c1"># worker 因信号SIGINT 或者 SIGQUIT 退出之后钩子</span>
+<span class="k">def</span> <span class="nf">worker_ini</span><span class="p">(</span><span class="n">worker</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">after_worker_quit</span> <span class="o">=</span> <span class="n">worker_ini</span>
+
+
+<span class="c1"># worker abort hook</span>
+<span class="k">def</span> <span class="nf">worker_abort</span><span class="p">(</span><span class="n">worker</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">worker_abort_hook</span> <span class="o">=</span> <span class="n">worker_abort</span>
+
+
+<span class="c1"># before a new master process forked hook</span>
+<span class="k">def</span> <span class="nf">before_exec</span><span class="p">(</span><span class="n">server</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">before_exec_hook</span> <span class="o">=</span> <span class="n">before_exec</span>
+
+
+<span class="c1"># before handle a request</span>
+<span class="k">def</span> <span class="nf">before_handle_req</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">before_handle_req_hook</span> <span class="o">=</span> <span class="n">before_handle_req</span>
+
+
+<span class="c1"># after handle req</span>
+<span class="k">def</span> <span class="nf">after_handle_req</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">environ</span><span class="p">,</span> <span class="n">resp</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">after_handle_req_hook</span> <span class="o">=</span> <span class="n">after_handle_req</span>
+
+
+<span class="c1"># child process ended hook</span>
+<span class="k">def</span> <span class="nf">after_child_exit</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">worker</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">after_child_exit_hook</span> <span class="o">=</span> <span class="n">after_child_exit</span>
+
+
+<span class="c1"># after worker exit</span>
+<span class="k">def</span> <span class="nf">after_worker_exit</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">worker</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">after_worker_exit_hook</span> <span class="o">=</span> <span class="n">after_worker_exit</span>
+
+
+<span class="c1"># number of the workers changed</span>
+<span class="k">def</span> <span class="nf">after_workernum_changed</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">new_value</span><span class="p">,</span> <span class="n">old_value</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">after_workernum_changed_hook</span> <span class="o">=</span> <span class="n">after_workernum_changed</span>
+
+
+<span class="c1"># when exit server</span>
+<span class="k">def</span> <span class="nf">when_exit_server</span><span class="p">(</span><span class="n">server</span><span class="p">):</span>
+    <span class="k">pass</span>
+<span class="n">when_exit_server_hook</span> <span class="o">=</span> <span class="n">when_exit_server</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">服务器选项配置</a><ul>
+<li><a class="reference internal" href="#id2">从命令行配置</a></li>
+<li><a class="reference internal" href="#id3">从配置文件配置</a><ul>
+<li><a class="reference internal" href="#access-logfile">access_logfile</a></li>
+<li><a class="reference internal" href="#access-logformat">access_logformat</a></li>
+<li><a class="reference internal" href="#backlog">backlog</a></li>
+<li><a class="reference internal" href="#bind">bind</a></li>
+<li><a class="reference internal" href="#ssl">ssl</a></li>
+<li><a class="reference internal" href="#ca-certs">ca_certs</a></li>
+<li><a class="reference internal" href="#capture-output">capture_output</a></li>
+<li><a class="reference internal" href="#cert-reqs">cert_reqs</a></li>
+<li><a class="reference internal" href="#certfile">certfile</a></li>
+<li><a class="reference internal" href="#chdir">chdir</a></li>
+<li><a class="reference internal" href="#check-config">check_config</a></li>
+<li><a class="reference internal" href="#ciphers">ciphers</a></li>
+<li><a class="reference internal" href="#config">config</a></li>
+<li><a class="reference internal" href="#daemon">daemon</a></li>
+<li><a class="reference internal" href="#do-handshake-on-connect">do_handshake_on_connect</a></li>
+<li><a class="reference internal" href="#enable-stdio-inheritance">enable_stdio_inheritance</a></li>
+<li><a class="reference internal" href="#env">env</a></li>
+<li><a class="reference internal" href="#forwarded-allow-ips">forwarded_allow_ips</a></li>
+<li><a class="reference internal" href="#graceful-timeout">graceful_timeout</a></li>
+<li><a class="reference internal" href="#group">group</a></li>
+<li><a class="reference internal" href="#help">help</a></li>
+<li><a class="reference internal" href="#initgroups">initgroups</a></li>
+<li><a class="reference internal" href="#keep-alive">keep_alive</a></li>
+<li><a class="reference internal" href="#keyfile">keyfile</a></li>
+<li><a class="reference internal" href="#limit-request-field-size">limit_request_field_size</a></li>
+<li><a class="reference internal" href="#limit-request-fields">limit_request_fields</a></li>
+<li><a class="reference internal" href="#limit-request-line">limit_request_line</a></li>
+<li><a class="reference internal" href="#log-config">log_config</a></li>
+<li><a class="reference internal" href="#log-file">log_file</a></li>
+<li><a class="reference internal" href="#log-level">log_level</a></li>
+<li><a class="reference internal" href="#log-syslog">log_syslog</a></li>
+<li><a class="reference internal" href="#log-syslog-facility">log_syslog_facility</a></li>
+<li><a class="reference internal" href="#log-syslog-prefix">log_syslog_prefix</a></li>
+<li><a class="reference internal" href="#log-syslog-to">log_syslog_to</a></li>
+<li><a class="reference internal" href="#logger-class">logger_class</a></li>
+<li><a class="reference internal" href="#max-requests">max_requests</a></li>
+<li><a class="reference internal" href="#max-requests-jitter">max_requests_jitter</a></li>
+<li><a class="reference internal" href="#name">name</a></li>
+<li><a class="reference internal" href="#no-sendfile">no_sendfile</a></li>
+<li><a class="reference internal" href="#paster">paster</a></li>
+<li><a class="reference internal" href="#pid">pid</a></li>
+<li><a class="reference internal" href="#preload">preload</a></li>
+<li><a class="reference internal" href="#proxy-allow-from">proxy_allow_from</a></li>
+<li><a class="reference internal" href="#proxy-protocol">proxy_protocol</a></li>
+<li><a class="reference internal" href="#pythonpath">pythonpath</a></li>
+<li><a class="reference internal" href="#reload">reload</a></li>
+<li><a class="reference internal" href="#is-ssl">is_ssl</a></li>
+<li><a class="reference internal" href="#reload-engine">reload_engine</a></li>
+<li><a class="reference internal" href="#spew">spew</a></li>
+<li><a class="reference internal" href="#ssl-version">ssl_version</a></li>
+<li><a class="reference internal" href="#statsd-host">statsd_host</a></li>
+<li><a class="reference internal" href="#statsd-prefix">statsd_prefix</a></li>
+<li><a class="reference internal" href="#suppress-ragged-eofs">suppress_ragged_eofs</a></li>
+<li><a class="reference internal" href="#threads">threads</a></li>
+<li><a class="reference internal" href="#timeout">timeout</a></li>
+<li><a class="reference internal" href="#umask">umask</a></li>
+<li><a class="reference internal" href="#user">user</a></li>
+<li><a class="reference internal" href="#version">version</a></li>
+<li><a class="reference internal" href="#worker-class">worker_class</a></li>
+<li><a class="reference internal" href="#worker-connections">worker_connections</a></li>
+<li><a class="reference internal" href="#worker-tmp-dir">worker_tmp_dir</a></li>
+<li><a class="reference internal" href="#workers">workers</a></li>
+<li><a class="reference internal" href="#tmp-upload-dir">tmp_upload_dir</a></li>
+<li><a class="reference internal" href="#default-proc-name">default_proc_name</a></li>
+<li><a class="reference internal" href="#id16">服务器钩子</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="install_and_run.html" title="previous chapter">安装</a></li>
+      <li>Next: <a href="FAQ.html" title="next chapter">FAQ</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/configuration.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, wangqiang.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/configuration.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
