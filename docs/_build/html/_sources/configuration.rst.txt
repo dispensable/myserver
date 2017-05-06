@@ -25,9 +25,6 @@
 配置文件为普通的python文件，你可以在`/myserver/config/default_conf.py`查看所有可配置项。
 配置文件应该是一个python模块。具体可配置选项如下：
 
-
-# default config in file
-
 access_logfile
 ^^^^^^^^^^^^^^
 
@@ -167,9 +164,9 @@ ciphers
 
     可选值: ssl版本 [#]_
 
-.. [#] 见 `SSL and TLS version<https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols>`_
+.. [#] 见 `SSL and TLS version <https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols>`_
 
-    说明: `TSL<https://tools.ietf.org/html/rfc5246>`_
+    说明: `TSL <https://tools.ietf.org/html/rfc5246>`_
 
     示例:
 
@@ -216,7 +213,7 @@ do_handshake_on_connect
 
     说明: 是否在ssl连接时握手 [#]_
 
-.. [#] 参见`ssl module<https://docs.python.org/3/library/ssl.html#ssl.wrap_socket>`_
+.. [#] 参见 `ssl module <https://docs.python.org/3/library/ssl.html#ssl.wrap_socket>`_
 
     示例:
 
@@ -469,7 +466,7 @@ log_syslog_facility
 
     默认值: 'user'
 
-    可选值: `RFC3164<https://tools.ietf.org/html/rfc3164#section-4.1.1>`_
+    可选值: `RFC3164 <https://tools.ietf.org/html/rfc3164#section-4.1.1>`_
 
     说明: syslog facility
 
@@ -576,7 +573,7 @@ no_sendfile
 
     可选值: True/False
 
-    说明: 禁用`sendfile<https://www.ibm.com/developerworks/cn/linux/l-cn-zerocopy2/>`_ 系统调用
+    说明: 禁用 `sendfile <https://www.ibm.com/developerworks/cn/linux/l-cn-zerocopy2/>`_  系统调用
 
     示例:
 
@@ -739,7 +736,7 @@ ssl_version
 
     默认值: 3
 
-    可选值: see `TSL AND SSL VERSION<https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols>`_
+    可选值: see `TSL AND SSL VERSION <https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols>`_
 
     说明: SSL 版本
 

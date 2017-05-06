@@ -8,7 +8,7 @@
     
     <title>服务器选项配置 &#8212; MyServer 0.1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -28,22 +28,27 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FAQ" href="FAQ.html" />
-    <link rel="prev" title="安装" href="install_and_run.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="prev" title="安装" href="install_and_run.html" /> 
   </head>
   <body role="document">
-  
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>MyServer 0.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>服务器选项配置</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="install_and_run.html">安装</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="FAQ.html">FAQ</a>&#160;&#160;»
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content">
+        
+        
   <div class="section" id="id1">
 <h1>服务器选项配置<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id2">
@@ -61,7 +66,6 @@
 </div>
 <p>配置文件为普通的python文件，你可以在`/myserver/config/default_conf.py`查看所有可配置项。
 配置文件应该是一个python模块。具体可配置选项如下：</p>
-<p># default config in file</p>
 <div class="section" id="access-logfile">
 <h3>access_logfile<a class="headerlink" href="#access-logfile" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -181,8 +185,8 @@
 <table class="docutils footnote" frame="void" id="id5" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id4">[1]</a></td><td><p class="first">见 <a href="#id17"><span class="problematic" id="id18">`SSL and TLS version&lt;https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols&gt;`_</span></a></p>
-<p>说明: <a href="#id19"><span class="problematic" id="id20">`TSL&lt;https://tools.ietf.org/html/rfc5246&gt;`_</span></a></p>
+<tr><td class="label"><a class="fn-backref" href="#id4">[1]</a></td><td><p class="first">见 <a class="reference external" href="https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols">SSL and TLS version</a></p>
+<p>说明: <a class="reference external" href="https://tools.ietf.org/html/rfc5246">TSL</a></p>
 <p class="last">示例:</p>
 </td></tr>
 </tbody>
@@ -225,7 +229,7 @@
 <table class="docutils footnote" frame="void" id="id7" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id6">[2]</a></td><td><p class="first">参见`ssl module&lt;<a class="reference external" href="https://docs.python.org/3/library/ssl.html#ssl.wrap_socket">https://docs.python.org/3/library/ssl.html#ssl.wrap_socket</a>&gt;`_</p>
+<tr><td class="label"><a class="fn-backref" href="#id6">[2]</a></td><td><p class="first">参见 <a class="reference external" href="https://docs.python.org/3/library/ssl.html#ssl.wrap_socket">ssl module</a></p>
 <p class="last">示例:</p>
 </td></tr>
 </tbody>
@@ -430,7 +434,7 @@
 <h3>log_syslog_facility<a class="headerlink" href="#log-syslog-facility" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>默认值: &#8216;user&#8217;</p>
-<p>可选值: <a href="#id21"><span class="problematic" id="id22">`RFC3164&lt;https://tools.ietf.org/html/rfc3164#section-4.1.1&gt;`_</span></a></p>
+<p>可选值: <a class="reference external" href="https://tools.ietf.org/html/rfc3164#section-4.1.1">RFC3164</a></p>
 <p>说明: syslog facility</p>
 <p>示例:</p>
 </div></blockquote>
@@ -515,7 +519,7 @@
 <blockquote>
 <div><p>默认值: False</p>
 <p>可选值: True/False</p>
-<p>说明: 禁用`sendfile&lt;<a class="reference external" href="https://www.ibm.com/developerworks/cn/linux/l-cn-zerocopy2/">https://www.ibm.com/developerworks/cn/linux/l-cn-zerocopy2/</a>&gt;`_ 系统调用</p>
+<p>说明: 禁用 <a class="reference external" href="https://www.ibm.com/developerworks/cn/linux/l-cn-zerocopy2/">sendfile</a>  系统调用</p>
 <p>示例:</p>
 </div></blockquote>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">no_sendfile</span> <span class="o">=</span> <span class="bp">False</span>
@@ -646,7 +650,7 @@
 <h3>ssl_version<a class="headerlink" href="#ssl-version" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>默认值: 3</p>
-<p>可选值: see <a href="#id23"><span class="problematic" id="id24">`TSL AND SSL VERSION&lt;https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols&gt;`_</span></a></p>
+<p>可选值: see <a class="reference external" href="https://wiki.openssl.org/index.php/SSL_and_TLS_Protocols">TSL AND SSL VERSION</a></p>
 <p>说明: SSL 版本</p>
 <p>示例:</p>
 </div></blockquote>
@@ -949,130 +953,22 @@
 </div>
 
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">服务器选项配置</a><ul>
-<li><a class="reference internal" href="#id2">从命令行配置</a></li>
-<li><a class="reference internal" href="#id3">从配置文件配置</a><ul>
-<li><a class="reference internal" href="#access-logfile">access_logfile</a></li>
-<li><a class="reference internal" href="#access-logformat">access_logformat</a></li>
-<li><a class="reference internal" href="#backlog">backlog</a></li>
-<li><a class="reference internal" href="#bind">bind</a></li>
-<li><a class="reference internal" href="#ssl">ssl</a></li>
-<li><a class="reference internal" href="#ca-certs">ca_certs</a></li>
-<li><a class="reference internal" href="#capture-output">capture_output</a></li>
-<li><a class="reference internal" href="#cert-reqs">cert_reqs</a></li>
-<li><a class="reference internal" href="#certfile">certfile</a></li>
-<li><a class="reference internal" href="#chdir">chdir</a></li>
-<li><a class="reference internal" href="#check-config">check_config</a></li>
-<li><a class="reference internal" href="#ciphers">ciphers</a></li>
-<li><a class="reference internal" href="#config">config</a></li>
-<li><a class="reference internal" href="#daemon">daemon</a></li>
-<li><a class="reference internal" href="#do-handshake-on-connect">do_handshake_on_connect</a></li>
-<li><a class="reference internal" href="#enable-stdio-inheritance">enable_stdio_inheritance</a></li>
-<li><a class="reference internal" href="#env">env</a></li>
-<li><a class="reference internal" href="#forwarded-allow-ips">forwarded_allow_ips</a></li>
-<li><a class="reference internal" href="#graceful-timeout">graceful_timeout</a></li>
-<li><a class="reference internal" href="#group">group</a></li>
-<li><a class="reference internal" href="#help">help</a></li>
-<li><a class="reference internal" href="#initgroups">initgroups</a></li>
-<li><a class="reference internal" href="#keep-alive">keep_alive</a></li>
-<li><a class="reference internal" href="#keyfile">keyfile</a></li>
-<li><a class="reference internal" href="#limit-request-field-size">limit_request_field_size</a></li>
-<li><a class="reference internal" href="#limit-request-fields">limit_request_fields</a></li>
-<li><a class="reference internal" href="#limit-request-line">limit_request_line</a></li>
-<li><a class="reference internal" href="#log-config">log_config</a></li>
-<li><a class="reference internal" href="#log-file">log_file</a></li>
-<li><a class="reference internal" href="#log-level">log_level</a></li>
-<li><a class="reference internal" href="#log-syslog">log_syslog</a></li>
-<li><a class="reference internal" href="#log-syslog-facility">log_syslog_facility</a></li>
-<li><a class="reference internal" href="#log-syslog-prefix">log_syslog_prefix</a></li>
-<li><a class="reference internal" href="#log-syslog-to">log_syslog_to</a></li>
-<li><a class="reference internal" href="#logger-class">logger_class</a></li>
-<li><a class="reference internal" href="#max-requests">max_requests</a></li>
-<li><a class="reference internal" href="#max-requests-jitter">max_requests_jitter</a></li>
-<li><a class="reference internal" href="#name">name</a></li>
-<li><a class="reference internal" href="#no-sendfile">no_sendfile</a></li>
-<li><a class="reference internal" href="#paster">paster</a></li>
-<li><a class="reference internal" href="#pid">pid</a></li>
-<li><a class="reference internal" href="#preload">preload</a></li>
-<li><a class="reference internal" href="#proxy-allow-from">proxy_allow_from</a></li>
-<li><a class="reference internal" href="#proxy-protocol">proxy_protocol</a></li>
-<li><a class="reference internal" href="#pythonpath">pythonpath</a></li>
-<li><a class="reference internal" href="#reload">reload</a></li>
-<li><a class="reference internal" href="#is-ssl">is_ssl</a></li>
-<li><a class="reference internal" href="#reload-engine">reload_engine</a></li>
-<li><a class="reference internal" href="#spew">spew</a></li>
-<li><a class="reference internal" href="#ssl-version">ssl_version</a></li>
-<li><a class="reference internal" href="#statsd-host">statsd_host</a></li>
-<li><a class="reference internal" href="#statsd-prefix">statsd_prefix</a></li>
-<li><a class="reference internal" href="#suppress-ragged-eofs">suppress_ragged_eofs</a></li>
-<li><a class="reference internal" href="#threads">threads</a></li>
-<li><a class="reference internal" href="#timeout">timeout</a></li>
-<li><a class="reference internal" href="#umask">umask</a></li>
-<li><a class="reference internal" href="#user">user</a></li>
-<li><a class="reference internal" href="#version">version</a></li>
-<li><a class="reference internal" href="#worker-class">worker_class</a></li>
-<li><a class="reference internal" href="#worker-connections">worker_connections</a></li>
-<li><a class="reference internal" href="#worker-tmp-dir">worker_tmp_dir</a></li>
-<li><a class="reference internal" href="#workers">workers</a></li>
-<li><a class="reference internal" href="#tmp-upload-dir">tmp_upload_dir</a></li>
-<li><a class="reference internal" href="#default-proc-name">default_proc_name</a></li>
-<li><a class="reference internal" href="#id16">服务器钩子</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="install_and_run.html" title="previous chapter">安装</a></li>
-      <li>Next: <a href="FAQ.html" title="next chapter">FAQ</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/configuration.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="install_and_run.html">安装</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="FAQ.html">FAQ</a>&#160;&#160;»
+        </p>
+
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2017, wangqiang.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
-      |
-      <a href="_sources/configuration.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, wangqiang.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
   </body>
 </html>
