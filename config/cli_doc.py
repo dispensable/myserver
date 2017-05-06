@@ -55,7 +55,6 @@ Options:
                         [default: 1]
   -n STRING --name=STRING
                         A base to use with setproctitle for process naming.
-.
   --no-sendfile         Disables the use of ``sendfile()``..
   -p FILE --pid=FILE   A filename to use for the PID file..
   -m INT --umask=INT   A bit mask for the file mode on files written by
