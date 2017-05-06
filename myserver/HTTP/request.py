@@ -1,7 +1,8 @@
-from io import BytesIO
-from HTTP.errors import InvalidRequestLine, NoMoreData, InvalidHeader
 import re
-from HTTP.body import LengthBody, ChunkedBody, Body
+from io import BytesIO
+
+from myserver.HTTP.body import LengthBody, ChunkedBody, Body
+from myserver.HTTP.errors import NoMoreData, InvalidHeader
 
 
 class Request(object):

@@ -1,10 +1,9 @@
 # _*_ coding:utf-8 _*_
 
 import sys
-from config.config import Config
-from watcher import Watcher
-import os.path
-import traceback
+
+from myserver.config.config import Config
+from myserver.watcher import Watcher
 
 
 class BaseApp(object):

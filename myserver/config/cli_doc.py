@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from docopt import docopt
-from version import __version__
+from myserver.version import __version__
 
 CLI_DOC = """MyServer.
 Usage:

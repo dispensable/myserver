@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
-from io import BytesIO
-from HTTP.errors import InvalidChunkSize, NoMoreData
 import sys
+from io import BytesIO
+
+from myserver.HTTP.errors import InvalidChunkSize
 
 
 class LengthBody(object):

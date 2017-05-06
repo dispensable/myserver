@@ -1,15 +1,14 @@
-from .baseworker import BaseWorker
-import utils
-import select
-import os
 import errno
-import ssl
-
-from HTTP.parser import RequestParser
-from HTTP import wsgi
-import time
+import os
+import select
 import socket
-import HTTP.errors
+import ssl
+import time
+
+from myserver import utils
+from myserver.HTTP.parser import RequestParser
+from myserver.HTTP import wsgi
+from .baseworker import BaseWorker
 
 
 class SyncWorker(BaseWorker):
@@ -83,7 +82,7 @@ class SyncWorker(BaseWorker):
 
             # handle request
             self.handle_request(listener, request, client, addr)
-        except HTTP.errors.NoMoreData as e:
+        except myserver.HTTP.errors.NoMoreData as e:
             self.log.debug("Ignored premature client disconnection {}".format(e))
         except StopIteration as e:
             self.log.debug("Closing connection. {}".format(e))

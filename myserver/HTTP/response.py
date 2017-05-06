@@ -1,8 +1,11 @@
-from version import SERVER_SOFTWARE
+import io
+import os
 from email.utils import formatdate
 from warnings import warn
+
 from utils import CachedProperty
-import os, io
+
+from myserver.version import SERVER_SOFTWARE
 
 try:
     from os import sendfile

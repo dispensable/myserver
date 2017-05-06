@@ -1,5 +1,6 @@
-from HTTP.request import Request
 from HTTP.buffer import Buffer
+
+from myserver.HTTP.request import Request
 
 
 class RequestParser(object):

@@ -1,10 +1,11 @@
-from HTTP import response
-from urllib.parse import urlparse
-import os
-from version import SERVER_SOFTWARE
 import io
 import logging
+import os
 import sys
+from urllib.parse import urlparse
+
+from myserver.HTTP import response
+from myserver.version import SERVER_SOFTWARE
 
 WSGI_DICT = {
     'CONTENT_LENGTH': 0,

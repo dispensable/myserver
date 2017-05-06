@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 
+import errno
 import os
+import select
+import signal
 import sys
+import time
+from setproctitle import setproctitle
+
+import utils
+from error import HaltServer
 from pidfile import Pidfile
 from sock import create_sockets
-import utils
-import signal
-import select
-import errno
-from setproctitle import setproctitle
-import time
-from config.config import __version__
-from logger import Logger
 from utils import get_time_mmap
-from error import HaltServer
+
+from myserver.version import __version__
+from myserver.logger import Logger
 
 
 class Watcher(object):
@@ -261,7 +263,7 @@ class Watcher(object):
 
         # TODO: from config file get worker class (import not only use str)
         #Worker_Class = self.cfg.get("worker_class")
-        from workers import sync_worker
+        from myserver.workers import sync_worker
         Worker_Class = sync_worker.SyncWorker
         worker = Worker_Class(self.worker_age, self.pid, self.app, self.log,
                               self.LISTENERS, self.timeout / 2, self.cfg)

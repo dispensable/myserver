@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from app.baseapp import App
-import sys
 import os
+import sys
+
+from myserver.app.baseapp import App
 
 
 class MainApp(App):
@@ -36,6 +37,7 @@ class MainApp(App):
                  ' import {app}'.format(package_module=package_module, app=app))
         except ImportError:
             raise
+
 
         return eval(app)
 

@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from baseapp import App
+from myserver.app.baseapp import App
 import sys
 import os
-from wsgiapp import wsgi_app
+from myserver.app.wsgiapp import wsgi_app
 
 
 class TestApp(App):

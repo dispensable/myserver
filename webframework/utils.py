@@ -1,18 +1,14 @@
 # -*- coding:utf-8 -*-
 
-from threading import local
-import os.path
-import http.client
-import hashlib
 import base64
-import pickle
+import hashlib
 import hmac
-import datetime, time
-
-
-version_info = (0, 1, 0)
-__version__ = ".".join([str(v) for v in version_info])
-FRAMEWORK = "myframwork/%s" % __version__
+import os.path
+import pickle
+import time
+from threading import local
+from http.client import responses
+from myserver.version import *
 
 
 class LocalVar(object):
@@ -106,7 +102,7 @@ class FileUpload:
             raise TypeError('Can not save to this obj: {!s}'.format(dest))
 
 
-HTTP_CODES = http.client.responses.copy()
+HTTP_CODES = responses.copy()
 HTTP_CODES[418] = "I'm a teapot"
 HTTP_CODES[428] = "Precondition Required"
 HTTP_CODES[429] = "Too Many Requests"

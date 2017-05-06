@@ -1,19 +1,18 @@
 # -*- coding:utf-8 -*-
 
-import time
-import sys
+import mmap
 import os
+import signal
+import sys
+import time
+from ssl import SSLError
 
 import utils
-import signal
-
-from reloader import reloaders
-import mmap
 from utils import set_now_mmap
-from HTTP.errors import *
-from ssl import SSLError
-from HTTP.wsgi import default_environ
-from HTTP.response import Response
+
+from myserver.HTTP.response import Response
+from myserver.HTTP.wsgi import default_environ
+from myserver.reloader import reloaders
 
 
 class BaseWorker(object):
@@ -69,6 +68,8 @@ class BaseWorker(object):
 
         self.init_sig()
 
+        self.load_wsgi()
+
         # set reloader
         reloader = self.config.get('reload_engine')
         if reloader in reloaders:
@@ -83,7 +84,6 @@ class BaseWorker(object):
             self.reloader = reloaders[reloader](callback=on_change)
             self.reloader.start()
 
-        self.load_wsgi()
         self.config.get('after_worker_init')(self)
 
         self.booted = True

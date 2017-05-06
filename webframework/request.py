@@ -1,14 +1,15 @@
-from .utils import LocalVar
-from http.cookies import SimpleCookie
-from urllib import parse
-from json import load, JSONDecodeError
-from io import BytesIO
-from cgi import FieldStorage
-from .utils import FileUpload
 import hashlib
-from .utils import check_cookie
-from .error import HttpError
+from cgi import FieldStorage
+from io import BytesIO
+from json import load, JSONDecodeError
 from tempfile import TemporaryFile
+from urllib import parse
+
+from http.cookies import SimpleCookie
+from .error import HttpError
+from .utils import FileUpload
+from .utils import LocalVar
+from .utils import check_cookie
 
 
 class Request(object):

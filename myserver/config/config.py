@@ -8,7 +8,7 @@ import os.path
 import sys
 import traceback
 
-__version__ = '0.1.0'
+from myserver.version import __version__
 
 
 class Config(object):
@@ -45,10 +45,12 @@ class Config(object):
 
     @staticmethod
     def get_default_config_file():
-        config_path = os.path.join(os.path.dirname(os.getcwd()), 'config', 'default_conf.py')
+        config_path = os.path.join(os.path.dirname(os.getcwd()), 'myserver', 'myserver', 'config', 'default_conf.py')
+        print(os.getcwd())
+        print(config_path)
         if os.path.exists(config_path):
             return config_path
-        return None
+        raise IOError('default config file not exist'.format(config_path))
 
     def change_docopt_format(self):
         """ 将docopt返回的字典键转为符合python变量名要求的格式"""

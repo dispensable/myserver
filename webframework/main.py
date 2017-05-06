@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
-import sys
 import os
-from config.config import Config
+import sys
 from wsgiref import simple_server
+
+from myserver.config import Config
 
 
 class BaseApp:
