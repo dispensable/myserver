@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from baseapp import App
+from app.baseapp import App
 import sys
 import os
 
