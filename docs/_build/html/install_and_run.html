@@ -53,12 +53,19 @@
 <h1>安装<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id2">
 <h2>从源码安装<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>下载源码后直接运行python setup tools 即可完成安装。使用-h查看帮助和使用方法。</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>$ git clone https://github.com/dispensable/myserver.git
+$ python3 setup.py install
+$ myserver -h
+$ myserver &lt;you wsgi app module&gt; &lt;your wsgi app&gt;
+</pre></div>
+</div>
 </div>
 <div class="section" id="github">
 <h2>从github安装<a class="headerlink" href="#github" title="Permalink to this headline">¶</a></h2>
 <p><em>从Github下载源码</em></p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span>$ git clone https://github.com/dispensable/myserver.git
-$ sudo chmod +x &lt;MyServer repository&gt;/app/main.py
+$ sudo chmod +x &lt;MyServer repository&gt;/main.py
 $ ./main.py &lt;your wsgi app module&gt; &lt;your wsgi app&gt;
 </pre></div>
 </div>

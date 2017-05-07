@@ -6,6 +6,15 @@
 从源码安装
 ---------
 
+下载源码后直接运行python setup tools 即可完成安装。使用-h查看帮助和使用方法。
+
+.. code-block:: shell
+
+   $ git clone https://github.com/dispensable/myserver.git
+   $ python3 setup.py install
+   $ myserver -h
+   $ myserver <you wsgi app module> <your wsgi app>
+
 从github安装
 -----------
 
@@ -14,7 +23,7 @@
 .. code-block:: shell
 
    $ git clone https://github.com/dispensable/myserver.git
-   $ sudo chmod +x <MyServer repository>/app/main.py
+   $ sudo chmod +x <MyServer repository>/main.py
    $ ./main.py <your wsgi app module> <your wsgi app>
 
 .. note:: 确保你的应用在app相同目录下
