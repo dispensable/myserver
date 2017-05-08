@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
-import sys
 import os
-from config.config import Config
+import sys
 from wsgiref import simple_server
+
+from myframework.config.config import Config
+from myframework.config.validate import optional_schema
 
 
 class BaseApp:
@@ -21,9 +23,15 @@ class BaseApp:
         # 读取配置文件
         filename = self.cfg.settings.get('conf')
 
-        if filename:
+        if filename and filename != 'default':
             config = self.cfg.get_settings_from_file(filename)
-            self.cfg.merge_cli_setting(self.cfg.settings, config)
+            # 合并cli指定的配置和默认配置
+            self.cfg.merge_cli_setting(self.cfg.settings, self.cfg.default_conf)
+            # 合并cli指定的配置文件
+            self.cfg.merge_cli_setting(config, self.cfg.settings, schema=optional_schema)
+            # 覆盖cli指定的配置项（--param 选项）
+            if self.cfg.settings.get('param'):
+                self.cfg.override_config(self.cfg.settings.get('param'))
         else:
             self.cfg.merge_cli_setting(self.cfg.settings, self.cfg.default_conf)
 

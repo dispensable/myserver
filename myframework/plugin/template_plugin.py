@@ -1,7 +1,8 @@
-from .plugin import Plugin
 import os
-from ..error import PluginAlreadyExistsException
 from functools import wraps
+
+from myframework.error import PluginAlreadyExistsException
+from .plugin import Plugin
 
 
 class Template:

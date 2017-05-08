@@ -1,28 +1,29 @@
 # -*- coding:utf-8 -*-
 
-from .routin import Router
-from .request import RequestWrapper
-from .routin import Route
-from .response import ResponseWrapper
-from .error import HttpError, RouteNotFoundException
-from json import dumps
+import hashlib
 import itertools
-from .utils import CloseIter
-import traceback
-from .plugin.plugin import Plugin
-from .error import UninstallPluginsError
-from .plugin.template_plugin import MakoTemplatePlugin, Template
-from .plugin.json_plugin import JsonPlugin
-
-from reloader import reloaders
-from .error import InvailideReloader
+import logging
+import mimetypes
+import os
 import sys
 import time
-import logging
-import os
-import mimetypes
+import traceback
+from json import dumps
+
+from reloader import reloaders
+from .response import ResponseWrapper
+from .routin import Route
+from .routin import Router
+from .utils import CloseIter
 from .utils import get_rfc_time, trans_rfc_to_date_time
-import hashlib
+
+from myframework.plugin.json_plugin import JsonPlugin
+from myframework.request import RequestWrapper
+from .error import HttpError, RouteNotFoundException
+from .error import InvailideReloader
+from .error import UninstallPluginsError
+from .plugin.plugin import Plugin
+from .plugin.template_plugin import MakoTemplatePlugin, Template
 
 request = RequestWrapper()
 response = ResponseWrapper()
@@ -30,7 +31,8 @@ response = ResponseWrapper()
 
 class MyApp(object):
     """ WSGI app """
-    def __init__(self, name='default_app'):
+    def __init__(self, path, name='default_app'):
+        self.root_path = path
         self.config = None
         self.reload = None
         self.reloader = None
@@ -369,23 +371,22 @@ class MyApp(object):
     def run(self, port=8080, host='127.0.0.1'):
         pass
 
+    def render_template(self, *args, **kwargs):
+        """ 第一个参数被视为template name, {}视为关键字参数.
+            template_plugin: Template Plugin class name
+            template_dir:    templates directory (used to find template)
 
-def render_template(*args, **kwargs):
-    """ 第一个参数被视为template name, {}视为关键字参数.
-        template_plugin: Template Plugin class name
-        template_dir:    templates directory (used to find template)
+            模板内部的关键字参数全部使用kwargs传入或者在位置参数位置传入dict
+        """
+        tname = args[0] if args else None
 
-        模板内部的关键字参数全部使用kwargs传入或者在位置参数位置传入dict
-    """
-    tname = args[0] if args else None
+        for dict_arg in args[1:]:
+            kwargs.update(dict_arg)
 
-    for dict_arg in args[1:]:
-        kwargs.update(dict_arg)
+        temp_plugin = kwargs.pop('template_plugin', MakoTemplatePlugin)
+        temp_dir = kwargs.pop('template_dir', os.path.join(os.path.dirname(self.root_path), 'templates'))
 
-    temp_plugin = kwargs.pop('template_plugin', MakoTemplatePlugin)
-    temp_dir = kwargs.pop('template_dir', os.getcwd()+'/templates')
-
-    return Template(tname, temp_plugin, temp_dir, **kwargs)
+        return Template(tname, temp_plugin, temp_dir, **kwargs)
 
 
 def error(status_code, phrase=None, traceback=None):

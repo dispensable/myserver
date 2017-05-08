@@ -1,12 +1,11 @@
 # -*- coding:utf-8 -*-
 
-from webframework.myframwork import MyApp, request, response, error, redirect
-from webframework.myframwork import render_template
-from webframework.utils import check_cookie
+from myframework.myframwork import MyApp, request, response, error, redirect
+from myframework.utils import check_cookie
 
 import os
 
-wsgi_app = MyApp()
+wsgi_app = MyApp(__file__)
 
 
 @wsgi_app.route('/4')
@@ -45,8 +44,7 @@ def test1():
 
 @wsgi_app.route(r'/render')
 def test3():
-    return render_template('base.html', name='Mako',
-                           template_dir=os.getcwd()+'/demo/templates')
+    return wsgi_app.render_template('base.html', name='Mako')
 
 
 @wsgi_app.route(r'/')

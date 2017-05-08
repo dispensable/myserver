@@ -1,7 +1,8 @@
-from .plugin import Plugin
-from ..error import PluginAlreadyExistsException
-from json import dumps
 from functools import wraps
+from json import dumps
+
+from myframework.error import PluginAlreadyExistsException
+from .plugin import Plugin
 
 
 class JsonPlugin(Plugin):

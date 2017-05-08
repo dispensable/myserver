@@ -17,7 +17,7 @@ Options:
                         use SERVER as backend. [default: myserver]
   -p <PLUGIN> --plugin=<PLUGIN>
                         install additional plugin/s.
-  -c FILE --conf=FILE  load config values from FILE. [default: default]
+  -c FILE --conf=FILE   load config values from FILE. [default: default]
   -C <NAME=VALUE> --param=<NAME=VALUE>
                         override config values.
   --debug               start server in debug mode. [default: False]

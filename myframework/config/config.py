@@ -2,7 +2,7 @@
 
 from .clidoc import CLI_DOC
 from docopt import docopt
-from .validate import schema
+from .validate import schema, optional_schema
 from schema import SchemaError
 import os.path
 import sys
@@ -33,7 +33,7 @@ class Config(object):
         self.change_docopt_format()
         self.validate_and_save(self.settings)
 
-    def validate_and_save(self, config):
+    def validate_and_save(self, config, schema=schema):
         """ 验证cli数据并转化为python的数据结构 """
         try:
             data = schema.validate(config)
@@ -45,7 +45,7 @@ class Config(object):
 
     @staticmethod
     def get_default_config_file():
-        config_path = os.path.join(os.path.dirname(os.getcwd()), 'webframework', 'config',
+        config_path = os.path.join(os.path.dirname(os.getcwd()), 'myframework', 'config',
                                    'default_conf.py')
         if os.path.exists(config_path):
             return config_path
@@ -65,11 +65,11 @@ class Config(object):
         if settings:
             self.settings = settings
 
-    def merge_cli_setting(self, cli_setting, config):
+    def merge_cli_setting(self, cli_setting, config, schema=schema):
         cli_setting = self.get_change_from_cli(cli_setting)
         for key, value in cli_setting.items():
             config[key] = value
-        self.validate_and_save(config)
+        self.validate_and_save(config, schema=schema)
 
     def get_change_from_cli(self, cli_setting):
         cli_config = {}

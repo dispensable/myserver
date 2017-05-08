@@ -33,3 +33,22 @@ schema = Schema(
     ignore_extra_keys=True
 )
 
+# for user config file
+# do not validate all the keys
+optional_schema = Schema(
+    {
+        Optional('bind'): str,
+        Optional('conf'): str,
+        Optional('debug'): bool,
+        Optional('help'): bool,
+        Optional('param'): Or([], validate_param),
+        Optional('plugin'): [str],
+        Optional('reload'): bool,
+        Optional('server'): str,
+        Optional('version'): bool,
+        Optional('reloader'): str,
+        Optional('package.module:app'): str
+    },
+    ignore_extra_keys=True
+)
+

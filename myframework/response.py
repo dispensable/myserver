@@ -1,9 +1,10 @@
-from .utils import LocalVar
-from http.cookies import SimpleCookie
-from .utils import HTTP_CODES
-from .utils import sig_cookie
 import hashlib
-from .error import HeaderNotAllowed
+from http.cookies import SimpleCookie
+
+from myframework.error import HeaderNotAllowed
+from .utils import HTTP_CODES
+from .utils import LocalVar
+from .utils import sig_cookie
 
 
 class Response(object):

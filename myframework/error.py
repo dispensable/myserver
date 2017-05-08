@@ -1,4 +1,4 @@
-from .utils import _HTTP_STATUS_LINES
+from myframework.utils import _HTTP_STATUS_LINES
 
 
 class MyFramworkException(Exception):
