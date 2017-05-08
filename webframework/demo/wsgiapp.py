@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from webframework.myframework.myframwork import MyApp, request, response, error, redirect
-from webframework.myframework.utils import check_cookie
+from myframework.myframwork import MyApp, request, response, error, redirect
+from myframework.utils import check_cookie
+
+import os
 
 wsgi_app = MyApp(__file__)
 
