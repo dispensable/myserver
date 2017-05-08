@@ -1,1 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
+.idea/
+myserver/HTTP/__pycache__/
+myserver/__pycache__/
+myserver/app/__pycache__/
+myserver/config/__pycache__/
+myserver/workers/__pycache__/
+build/
