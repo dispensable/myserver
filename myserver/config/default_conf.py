@@ -10,14 +10,14 @@ module = None
 
 # default config in file
 
-access_logfile = None
+access_logfile = '-'
 access_logformat = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 # The maximum number of pending connections.
 backlog = 2048
 
 # The socket to bind.
-bind = '127.0.0.1:8000'
+bind = ['127.0.0.1:8000']
 
 ssl = False
 ca_certs = None
@@ -35,7 +35,7 @@ daemon = False
 do_handshake_on_connect = False
 enable_stdio_inheritance = False
 env = []
-forwarded_allow_ips = '127.0.0.1'
+forwarded_allow_ips = ['127.0.0.1']
 
 # Timeout for graceful workers restart.
 graceful_timeout = 30
@@ -60,7 +60,7 @@ limit_request_fields = 100
 # The maximum size of HTTP request line in bytes.
 limit_request_line = 4094
 log_config = None
-log_file = sys.stderr
+log_file = '-'
 log_level = 'info'
 log_syslog = False
 log_syslog_facility = 'user'
@@ -80,7 +80,7 @@ no_sendfile = False
 paster = None
 pid = None
 preload = True
-proxy_allow_from = '127.0.0.1'
+proxy_allow_from = ['127.0.0.1']
 proxy_protocol = False
 pythonpath = None
 
