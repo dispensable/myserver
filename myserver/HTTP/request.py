@@ -55,7 +55,7 @@ class Request(object):
 
         # parse headers line and delete it
         headers_index = self.parse_headers(buf)
-
+        data = buf.getvalue()
         self.buffer.write_data(data[headers_index:])
 
         # parse body
@@ -126,9 +126,11 @@ class Request(object):
                 trailer_count = 0
             else:
                 trailer_count = len(self.header['trailer'].split(';'))
-            self.body = Body(ChunkedBody(self.buffer, trailer_count))
+            self.body = Body(ChunkedBody(self.buffer, trailer_count), self.buffer)
         elif "content-length" in self.header:
-            self.body = Body(LengthBody(self.buffer, int(self.header["content-lenght"])))
+            self.body = Body(LengthBody(self.buffer,
+                                        int(self.header["content-length"])),
+                             self.buffer)
 
     def should_close(self):
         if self.version < (1, 1):

@@ -73,7 +73,7 @@ def init_env(request, client_sock, listener_sock, config, addr):
     header_dict = request.header
 
     # set content_length
-    WSGI_DICT['CONTENT_LENGTH'] = header_dict.get('content-lenght', '')
+    WSGI_DICT['CONTENT_LENGTH'] = header_dict.get('content-length', '')
     # set content type
     WSGI_DICT['CONTENT_TYPE'] = header_dict.get('content-type', '')
     # set http accept

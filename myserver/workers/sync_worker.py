@@ -9,12 +9,13 @@ from myserver import utils
 from myserver.HTTP.parser import RequestParser
 from myserver.HTTP import wsgi
 from .baseworker import BaseWorker
+from myserver.HTTP.errors import NoMoreData
 
 
 class SyncWorker(BaseWorker):
     def run(self):
-        # for sock in self.listeners:
-        #     sock.setblocking(0)
+        for sock in self.listeners:
+            sock.setblocking(0)
 
         timeout = self.timeout or 0.5
         self.handle_data(timeout)
@@ -34,6 +35,9 @@ class SyncWorker(BaseWorker):
                         continue
                     try:
                         self.accept(listener)
+                    except BlockingIOError as e:
+                        # TODO: HANDLE THIS(惊群问题）
+                        raise e
                     except EnvironmentError as e:
                         if e.erron not in (errno.EAGAIN, errno.ECONNABORTED,
                                            errno.EWOULDBLOCK):
@@ -82,7 +86,7 @@ class SyncWorker(BaseWorker):
 
             # handle request
             self.handle_request(listener, request, client, addr)
-        except myserver.HTTP.errors.NoMoreData as e:
+        except NoMoreData as e:
             self.log.debug("Ignored premature client disconnection {}".format(e))
         except StopIteration as e:
             self.log.debug("Closing connection. {}".format(e))

@@ -5,6 +5,7 @@ import threading
 import sys
 import os
 import fcntl
+import datetime
 
 
 def get_level(level_name: str):
@@ -152,11 +153,14 @@ class Logger(object):
             "remotehost": environ.get('REMOTE_ADDR', '-'),
             "username": req.header.get('username', '-'),
             "auth-username": req.header.get('auth-username', '-'),
-            "timestamp": req.header.get('date', ''),
+            "timestamp": req.header.get('date', datetime.datetime.now()),
             "request-line": ' '.join([req.method, req.path,
                                       'HTTP/{}.{}'.format(req.version[0], req.version[1])]),
             "response-code": str(resp.status_code),
             "response-size": str(resp.sent_bytes),
             "response-time": str(request_time)
         }
-        self.access_logger.info("%s %s %s %s %s %s %s %s", log_format)
+        self.access_logger.info("%(remotehost)s %(username)s"
+                                " %(auth-username)s %(timestamp)s "
+                                "%(request-line)s %(response-code)s"
+                                " %(response-size)s %(response-time)s", log_format)
