@@ -10,9 +10,16 @@ from myserver.HTTP.parser import RequestParser
 from myserver.HTTP import wsgi
 from .baseworker import BaseWorker
 from myserver.HTTP.errors import NoMoreData
+from myserver.error import StopWaiting
+from multiprocessing import Lock
+
+SHARED_LOCK = Lock()
 
 
 class SyncWorker(BaseWorker):
+
+    sync_lock = SHARED_LOCK
+
     def run(self):
         for sock in self.listeners:
             sock.setblocking(0)
@@ -26,22 +33,29 @@ class SyncWorker(BaseWorker):
 
             try:
                 ready = self.wait(timeout)
-            except StopIteration:
+            except StopWaiting:
                 return
 
             if ready is not None:
                 for listener in ready:
+                    # self pipe (已读）
                     if listener == self.pipe[0]:
                         continue
-                    try:
-                        self.accept(listener)
-                    except BlockingIOError as e:
-                        # TODO: HANDLE THIS(惊群问题）
-                        raise e
-                    except EnvironmentError as e:
-                        if e.erron not in (errno.EAGAIN, errno.ECONNABORTED,
-                                           errno.EWOULDBLOCK):
-                            raise
+
+                    # 获取accept锁
+                    if self.sync_lock.acquire(block=False):
+                        # 获取成功
+                        try:
+                            self.accept(listener)
+                        except EnvironmentError as e:
+                            if e.erron not in (errno.EAGAIN, errno.ECONNABORTED,
+                                               errno.EWOULDBLOCK):
+                                raise
+                        except Exception as e:
+                            self.sync_lock.release()
+                            raise e
+                    # 获取失败
+                    else: continue
             if not self.is_parent_alive():
                 return
 
@@ -53,6 +67,8 @@ class SyncWorker(BaseWorker):
 
     def accept(self, listener):
         client, addr = listener.accept()
+        # accept 成功后释放锁定
+        self.sync_lock.release()
         client.setblocking(1)
         utils.set_fd_close_on_exec(client)
         self.handle(listener, client, addr)
@@ -72,7 +88,7 @@ class SyncWorker(BaseWorker):
                 if self.request_handled < 0:
                     return self.listeners
                 else:
-                    raise StopIteration
+                    raise StopWaiting
             raise
 
     def handle(self, listener, client, addr):
@@ -88,7 +104,7 @@ class SyncWorker(BaseWorker):
             self.handle_request(listener, request, client, addr)
         except NoMoreData as e:
             self.log.debug("Ignored premature client disconnection {}".format(e))
-        except StopIteration as e:
+        except StopWaiting as e:
             self.log.debug("Closing connection. {}".format(e))
         except ssl.SSLError as e:
             if e.args[0] == ssl.SSLEOFError:

@@ -16,3 +16,7 @@ class ConfigError(Exception):
 
 class AppImportError(Exception):
     """ Exception raised when loading an application """
+
+
+class StopWaiting(Exception):
+    """ Exception raised to stop waiting for a connection"""
