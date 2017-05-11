@@ -48,8 +48,9 @@ class SyncWorker(BaseWorker):
                         try:
                             self.accept(listener)
                         except EnvironmentError as e:
-                            if e.erron not in (errno.EAGAIN, errno.ECONNABORTED,
+                            if e.errno not in (errno.EAGAIN, errno.ECONNABORTED,
                                                errno.EWOULDBLOCK):
+                                self.sync_lock.release()
                                 raise
                         except Exception as e:
                             self.sync_lock.release()
