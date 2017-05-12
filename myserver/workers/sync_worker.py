@@ -42,19 +42,19 @@ class SyncWorker(BaseWorker):
                     if listener == self.pipe[0]:
                         continue
 
-                    # 获取accept锁
-                    if self.sync_lock.acquire(block=False):
-                        # 获取成功
-                        try:
-                            self.accept(listener)
-                        except EnvironmentError as e:
-                            if e.errno not in (errno.EAGAIN, errno.ECONNABORTED,
-                                               errno.EWOULDBLOCK):
-                                self.sync_lock.release()
-                                raise
-                        except Exception as e:
-                            self.sync_lock.release()
-                            raise e
+                    client, addr = self.accept(listener)
+
+                    if client is None or addr is None:
+                        continue
+
+                    try:
+                        self.handle(listener, client, addr)
+                    except EnvironmentError as e:
+                        if e.errno not in (errno.EAGAIN, errno.ECONNABORTED,
+                                           errno.EWOULDBLOCK):
+                            raise
+                    except Exception as e:
+                        raise e
                     # 获取失败
                     else: continue
             if not self.is_parent_alive():
@@ -67,12 +67,17 @@ class SyncWorker(BaseWorker):
         return True
 
     def accept(self, listener):
-        client, addr = listener.accept()
-        # accept 成功后释放锁定
-        self.sync_lock.release()
+        # 对accept上锁
+        if not self.sync_lock.acquire(block=False):
+            return None, None
+        try:
+            client, addr = listener.accept()
+        finally:
+            self.sync_lock.release()
+
         client.setblocking(1)
         utils.set_fd_close_on_exec(client)
-        self.handle(listener, client, addr)
+        return client, addr
 
     def wait(self, timeout):
         try:
