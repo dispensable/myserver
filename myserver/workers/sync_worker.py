@@ -72,6 +72,8 @@ class SyncWorker(BaseWorker):
             return None, None
         try:
             client, addr = listener.accept()
+        except BlockingIOError:
+            return None, None
         finally:
             self.sync_lock.release()
 
