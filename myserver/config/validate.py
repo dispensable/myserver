@@ -45,8 +45,8 @@ def validate_func(function):
 
 schema = Schema(
     {
-        'app': str,
-        'module': str,
+        'app': Or(None, str),
+        'module': Or(str, None),
         'access_logfile': Or(None, str),
         'access_logformat': str,
         'backlog': And(Use(int), lambda backlog: 5 <= backlog <= 65535),
@@ -63,7 +63,7 @@ schema = Schema(
         'do_handshake_on_connect': bool,
         'enable_stdio_inheritance': bool,
         'env': [str],
-        'forwarded_allow_ips': str,
+        'forwarded_allow_ips': [str],
         'graceful_timeout': And(Use(int), lambda time: time >= 0),
         'group': And(Use(int), lambda group: group >= 0),
         'help': bool,

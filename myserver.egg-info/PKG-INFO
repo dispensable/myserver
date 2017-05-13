@@ -1,10 +1,11 @@
 Metadata-Version: 1.0
 Name: myserver
 Version: 0.1.0
-Summary: UNKNOWN
-Home-page: UNKNOWN
-Author: UNKNOWN
-Author-email: UNKNOWN
+Summary: A pre-forked unix http web server
+Home-page: https://dispensable.github.io/myserver/
+Author: dispensable
+Author-email: sunsetmask@gmail.com
 License: UNKNOWN
 Description: UNKNOWN
+Keywords: http server
 Platform: UNKNOWN

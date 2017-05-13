@@ -38,19 +38,17 @@ class Config(object):
         try:
             data = schema.validate(config)
         except SchemaError as e:
-            raise SchemaError(e)
+            raise e
         else:
             self.settings = data
             return data
 
     @staticmethod
     def get_default_config_file():
-        config_path = os.path.join(os.path.dirname(os.getcwd()), 'myserver', 'myserver', 'config', 'default_conf.py')
-        print(os.getcwd())
-        print(config_path)
+        config_path = os.path.join(os.path.dirname(__file__), 'default_conf.py')
         if os.path.exists(config_path):
             return config_path
-        raise IOError('default config file not exist'.format(config_path))
+        raise IOError('default config file path: {} not exist'.format(config_path))
 
     def change_docopt_format(self):
         """ 将docopt返回的字典键转为符合python变量名要求的格式"""

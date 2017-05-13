@@ -16,6 +16,7 @@ from utils import get_time_mmap
 
 from myserver.version import __version__
 from myserver.logger import Logger
+from myserver.error import *
 
 
 class Watcher(object):
@@ -291,10 +292,21 @@ class Watcher(object):
                 # pre fork
                 worker.init()
                 sys.exit(0)
+            except SystemExit:
+                raise
+            except AppImportError as e:
+                self.log.debug("Exception while loading the wsgiapp", exc_info=True)
+                print(e, file=sys.stderr)
+                sys.stderr.flush()
+                sys.exit(self.APP_LOAD_EXIT_ERROR)
             except Exception as e:
-                raise e
+                # TODO： handle exception
+                self.log.exception("Exception in worker process %s", e)
+                if not worker.booted:
+                    sys.exit(self.WORKER_BOOT_ERROR_EXIT)
+                sys.exit(-1)
             finally:
-                self.log.info("worker %s booted", str(worker.pid))
+                self.log.info("worker %s exiting", str(worker.pid))
                 try:
                     self.cfg.get('after_worker_exit_hook')(self, worker)
                 except Exception as e:

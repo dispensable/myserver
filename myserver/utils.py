@@ -79,6 +79,7 @@ def write_chunk(sock, data):
 
 
 class CachedProperty:
+    """ 通过数据描述符缓存类属性 """
     def __init__(self, func):
         self.func = func
 

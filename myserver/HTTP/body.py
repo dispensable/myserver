@@ -110,9 +110,10 @@ class ChunkedBody(object):
 
 
 class Body(object):
-    def __init__(self, body_type):
+    def __init__(self, body_type, buffer):
         self.body_type = body_type
-        self.buf = BytesIO()
+        self.buffer = buffer
+        self.buf = self.buffer.buffer
 
     def __iter__(self):
         return self
@@ -126,26 +127,12 @@ class Body(object):
     def read(self, size=sys.maxsize):
         """ WSGI 1.0.1 """
 
-        if size == b'':
+        if size == 0:
             return b''
 
         size = self.validate_size_num(size)
 
-        if size < self.buf.tell():
-            return Body.get_size_data(self.buf, size)
-
-        elif size > self.buf.tell():
-            while self.buf.tell() < size:
-                new_data = self.body_type.read(1024)
-                if not new_data:
-                    break
-                self.buf.write(new_data)
-
-            return Body.get_size_data(self.buf, size)
-        else:
-            data = self.buf.getvalue()
-            self.buf = BytesIO()
-            return data
+        return self.buffer.read_data(size)
 
     @staticmethod
     def get_size_data(buf, size):
@@ -158,7 +145,7 @@ class Body(object):
     def validate_size_num(self, size):
         if size < 0:
             return sys.maxsize
-        if size is not isinstance(size, int):
+        if not isinstance(size, int):
             raise TypeError('size must > 0')
         return size
 

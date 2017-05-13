@@ -38,7 +38,6 @@ class MainApp(App):
         except ImportError:
             raise
 
-
         return eval(app)
 
     def load(self):

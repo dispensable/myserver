@@ -28,14 +28,15 @@ class Buffer(object):
 
         # buffer无数据
         if size is None:
-            return self.get_data()
+            data = self.get_data()
+            return data
 
         # 按大小读取数据
         while self.buffer.tell() < size:
             data = self.get_data()
 
-            # 如果读取完毕，返回所有数据被清空buffer
-            if not data:
+            # 如果读取完毕，返回所有数据并清空buffer
+            if not len(data):
                 all_data = self.buffer.getvalue()
                 self.buffer = BytesIO()
                 return all_data
@@ -51,3 +52,6 @@ class Buffer(object):
     def write_data(self, data):
         self.buffer.seek(0, os.SEEK_END)
         self.buffer.write(data)
+
+    def tell(self):
+        return self.buffer.tell()

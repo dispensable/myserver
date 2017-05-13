@@ -1,5 +1,4 @@
 from HTTP.buffer import Buffer
-
 from myserver.HTTP.request import Request
 
 

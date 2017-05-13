@@ -9,11 +9,12 @@ from myserver.watcher import Watcher
 class BaseApp(object):
     """ A layer between server app and framwork app.
     Load some config before server start"""
-    def __init__(self, argv=None, app=None):
+    def __init__(self, argv=None, app=None, config_file=None):
         self.callable = app
         self.config = None
         self.logger = None
         self.argv = argv
+        self.config_file = config_file
         self.load_config()
 
     def load_config(self):
@@ -30,7 +31,7 @@ class BaseApp(object):
 
     def load_app_config(self):
         """ load app config to convert default app """
-        raise NotImplementedError
+        pass
 
     def load(self):
         """ load app before server boot"""
@@ -61,22 +62,27 @@ class App(BaseApp):
 
     def load_all_config(self):
         cfg = self.config
-        if self.argv:
-            # 解析命令行配置
+        is_cli = self.argv is not None
+
+        if is_cli:
             cfg.get_config_from_cli()
+            filename = cfg.settings['config']
 
-        # 读取配置文件
-        filename = cfg.settings['config']
-
-        if filename:
-            config = cfg.get_settings_from_file(filename)
-            if self.argv:
-                cfg.merge_cli_setting(cfg.settings, config)
+            # cli 指定了配置文件
+            if filename:
+                # 载入用户配置文件
+                user_config = cfg.get_settings_from_file(filename)
+                # 合并命令行配置和文件配置（前者覆盖后者）
+                cfg.merge_cli_setting(cfg.settings, user_config)
             else:
-                cfg.validate_and_save(config)
-        else:
-            if self.argv:
+                # cli 未指定配置文件
                 cfg.merge_cli_setting(cfg.settings, cfg.default_conf)
+        # 非cli方式
+        else:
+            # 存在用户配置文件
+            if self.config_file:
+                user_config = cfg.get_settings_from_file(self.config_file)
+                cfg.merge_cli_setting(cfg.settings, user_config)
             else:
                 cfg.validate_and_save(cfg.default_conf)
 

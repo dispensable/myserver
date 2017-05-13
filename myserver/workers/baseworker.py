@@ -8,11 +8,12 @@ import time
 from ssl import SSLError
 
 import utils
-from utils import set_now_mmap
+from utils import set_now_mmap, write_error
 
 from myserver.HTTP.response import Response
 from myserver.HTTP.wsgi import default_environ
 from myserver.reloader import reloaders
+from myserver.HTTP.errors import *
 
 
 class BaseWorker(object):
@@ -182,7 +183,7 @@ class BaseWorker(object):
 
         try:
             write_error(client, status_int, reason, msg)
-        except:
+        except Exception:
             self.log.debug("Failed to send error message.")
 
     def run(self):
